@@ -41,8 +41,7 @@ perl run_tests.pl –t all –kp /path/to/kraken
 ```
 If using the automated installer kraken (/path/to/kraken) will be located in bin/kraken-version/ under the HLAProfiler directory. 
 
-## Contributors
-Chad Brown 
+## Contact
 Martin Buchkovich (martin.buchkovich@q2labsolutions.com)
 
 ## License

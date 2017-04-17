@@ -1,0 +1,2 @@
+Allele	Positions	MismatchBase	MismatchCoverage	ReferenceCoverage
+HLA00001	92	G	15	0

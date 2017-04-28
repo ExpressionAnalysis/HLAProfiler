@@ -38,8 +38,7 @@ research involving or based on the Software. The current citations for Software 
 https://github.com/ExpressionAnalysis/HLAProfiler
 
 6)  Any party desiring a license to use the Software for any use other than NON-COMMERCIAL
-USE shall contact Martin Buchkovich at martin.buchkovich@q2labsolutions.com or Chad Brown 
-at chad.brown@q2labsolutions.com.
+USE shall contact Martin Buchkovich at martin.buchkovich@q2labsolutions.com.
 DISCLAIMER: THIS SOFTWARE IS PROVIDED BY Q SQUARED SOLUTIONS EXPRESSION ANALYSIS LLC "AS
 IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.

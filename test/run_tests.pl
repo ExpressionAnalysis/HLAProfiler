@@ -60,12 +60,15 @@ if($opts{help}){
 	testDetermineProfile();
 	testPairPicker();
 	testAlleleRefiner();
-	testHLAPredict();
+	#testHLAPredict();
 	#testHLAProfiler();
 
-	done_testing(12);
+	done_testing(11);
 }elsif($opts{test} eq "DetermineProfile"){
 	testDetermineProfile();
+	done_testing(1);
+}elsif($opts{test} eq "HLATaxonomy"){
+	testHLATaxonomy();
 	done_testing(1);
 }elsif($opts{test} eq "HLAPredict"){
 	testHLAPredict();
@@ -1171,27 +1174,28 @@ sub testAlleleRefiner{
 		##Test 42 -  runModule no candidates error message
 		is($trap->stderr, "Candidate list is empty!\n", "Function runModule: no candidates error message");
 
-		my $out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		my $out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
 		##Test 43 - Commandline no input
 		is($?, 256, "Commandline AlleleRefiner: no input");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
 		##Test 44 - Commandline no output
 		is($?, 256, "Commandline AlleleRefiner: no output");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
 		##Test 45 - Commandline no gene
 		is($?, 256, "Commandline AlleleRefiner: no gene");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
 		##Test 46 - Commandline no reference fa
 		is($?, 256, "Commandline AlleleRefiner: no reference fa");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
 		##Test 47 - Commandline no candidates
 		is($?, 256, "Commandline AlleleRefiner: no candidates");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
+		
 		##Test 48 - Commandline no mismatch correct mismatch file
 		compareFiles("outputs/HLA00001_HLA00002.mismatches.txt", "test_output/HLA00001_HLA00002.mismatches.txt", "Commandline AlleleRefiner: no mismatch correct mismatch file");
 		##Test 49 - Commandline no mismatch correct coverage file
@@ -1199,15 +1203,16 @@ sub testAlleleRefiner{
 		##Test 50 - Commandline no mismatch correct kmer file
 		compareFiles("outputs/HLA00001_HLA00002.extra_kmers.txt", "test_output/HLA00001_HLA00002.extra_kmers.txt", "Commandline AlleleRefiner: no mismatch correct kmer file");
 		##Test 51 - Commandline no mismatch correct output
-		is($out, "HLA00002\t302\t27.50\t302\t27.50\nHLA00001\t54\t4.92\t108\t9.84\n", "Commandline AlleleRefiner: no mismatches correct output");
+		is($out, "HLA00001\t54\t4.92\t108\t9.84\nHLA00002\t302\t27.50\t302\t27.50\n", "Commandline AlleleRefiner: no mismatches correct output");
 
-		my $out_truth = "HLA00002\t302\t27.50\t302\t27.50\n". 
-				"HLA00001\t212\t19.31\t301\t27.41\n".
+		my $out_truth = "HLA00001\t212\t19.31\t301\t27.41\n".
+				"HLA00002\t302\t27.50\t302\t27.50\n". 
 				"Based on the observed data HLA00001 is really predicted to be HLA00001N A*01:01:01:01_novel.\n".
                                 ">HLA00001N A*01:01:01:01_novel 304 bp\n".
 				"ATGGCCGTCATGGCGCCCCGAACCCTCCTCCTGCTACTCTCGGGGGCCCTGGCCCTGACCCAGACCTGGGCGGGCTCCCACTCCATGAGGTGTTTCTTCACATCCGTGTCCCGGCCCGGCCGCGGGGAGCCCCGCTTCATCGCCGTGGGCTACGTGGACGACACGCAGTTCGTGCGGTTCGACAGCGACGCCGCGAGCCAGAAGATGGAGCCGCGGGCGCCGTGGATAGAGCAGGAGGGGCCGGAGTATTGGGACCAGGAGACACGGAATATGAAGGCCCACTCACAGACTGACCGAGCGAACC\n";
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001N_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001N_HLA00002 -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001N_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -pc -pm -pk -o test_output/HLA00001N_HLA00002 -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
+		
 		##Test 52 - Commandline 1 mismatch correct mismatch file
 		compareFiles("outputs/HLA00001N_HLA00002.mismatches.txt", "test_output/HLA00001N_HLA00002.mismatches.txt", "Commandline AlleleRefiner: 1 mismatch correct mismatch file");
 		##Test 53 - Commandline 1 mismatch correct coverage file
@@ -1217,7 +1222,8 @@ sub testAlleleRefiner{
 		##Test 55 - Commandline 1 mismatch correct output
 		is($out, $out_truth, "Commandline AlleleRefiner: 1 mismatch correct output");
 
-		$out = `perl /mounts/isilon/data/eahome/q815429/opt/scripts/HLAProfiler/bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -o test_output/HLA00001_HLA00002.nf -f .75  -sd ~/opt/scripts/HLAProfiler/bin/ 2>&1`;
+		$out = `perl $FindBin::Bin/../bin/modules/AlleleRefiner.pm -gene A -input inputs/HLA00001_HLA00002.A -r inputs/hla.allele_refinement.fa -c "HLA00001|HLA00002" -m 1 -o test_output/HLA00001_HLA00002.nf -f .75  -sd $FindBin::Bin/../bin/ 2>&1`;
+		
 		##Test 56 - Commandline no output files 
 		is(-e "test_output/HLA00001_HLA00002.nf.extra_kmers.txt" || -e "test_output/HLA00001_HLA00002.nf.coverage.txt" || -e "test_output/HLA00001_HLA00002.nf.mismatches.txt" , undef, "Commandline AlleleRefiner: no output files");
 		

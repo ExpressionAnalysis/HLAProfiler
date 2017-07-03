@@ -21,7 +21,8 @@ my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "perl $SCRIPT_NAME <module>\n" .
 	    "\nGlobal Modules. These module will run the process from start to finish.\n" .
 	    "  build\t\t\tBuild the HLAProfiler reference using a reference FASTA\n" .
-	            "  predict\t\tPredict the HLA types using paired end sequencing data.\n" .
+	    "  predict\t\tPredict the HLA types using paired end sequencing data.\n" .
+	    "  test_modules\t\tThis modules simply tests whether HLAProfiler.pl can access the required accessory perl modules\n" .
 	    "\nBuild Module Components. These module complete individual steps in the build module.\n" .
 	    "  create_taxonomy\tCreates a taxonomy needed to create a HLA database\n" .
 	    "  build_taxonomy\tBuilds the taxonomy into a database\n" .
@@ -34,7 +35,7 @@ my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "i.e. perl $SCRIPT_NAME  build -h\n" .
 	            "\nAUTHORS:\n" . 
 	    "Martin Buchkovich:martin.buchkovich\@q2labsolutions.com\n" .
-	    "Chad Brown:chad.brown\@q2labsolutions.com\n" .
+	    "Chad Brown\n" .
 	    "\nCREATED:\n$creation_date\n" .
 	    "\nLAST UPDATED:\n$last_updated\n" .
 	    "\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
@@ -46,7 +47,20 @@ $kraken_path=~s/scripts\/kraken//;
 chomp($kraken_path);
 
 my $log;
-if($module eq "build"){
+if($module eq "test_modules"){
+	load "$SCRIPTS_DIR/modules/RunKraken.pm";
+	load "$SCRIPTS_DIR/modules/MergeDuplicates.pm";
+	load "$SCRIPTS_DIR/modules/HLATaxonomy.pm";
+	load "$SCRIPTS_DIR/modules/TaxonomyDivisions.pm";
+	load "$SCRIPTS_DIR/modules/RunKraken.pm";
+	load "$SCRIPTS_DIR/modules/HLADistractome.pm";
+	load "$SCRIPTS_DIR/modules/SimulateReads.pm";
+	load "$SCRIPTS_DIR/modules/DetermineProfile.pm";
+	load "$SCRIPTS_DIR/modules/RunKraken.pm";
+	load "$SCRIPTS_DIR/modules/ReadCounter.pm";
+	load "$SCRIPTS_DIR/modules/HLAPredict.pm";
+	print "Modules loaded successfully\n";	
+}elsif($module eq "build"){
 	my $build_usage = "\n$SCRIPT_NAME build\n" .
 			"\nDESCRIPTION\n" .
 			"A tool for building the HLAProfiler reference from a fasta file containing the HLA reference and a fasta file containing GENCODE transcripts.\n" .

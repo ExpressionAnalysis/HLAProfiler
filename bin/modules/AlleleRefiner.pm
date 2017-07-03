@@ -36,7 +36,7 @@ my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "-print_kmers|pk\t\tPrints the sequence of read pairs that do not match perfectly to the reference\n" .
             "\nAUTHORS:\n" . 
 	    "Martin Buchkovich:martin.buchkovich\@q2labsolutions.com\n" .
-	    "Chad Brown:chad.brown\@q2labsolutions.com\n" .
+	    "Chad Brown\n" .
 	    "\nCREATED:\n$creation_date\n" .
 	    "\nLAST UPDATED:\n$last_updated\n" .
 	    "\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .

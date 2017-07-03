@@ -23,7 +23,7 @@ my $usage="\n$SCRIPT_NAME v$version\n".
           "-help|h\t\tDisplays this message\n" .
           "\nAUTHORS:\n" .
 	  "Martin Buchkovich:martin.buchkovich\@q2labsolutions.com\n" .
-	  "Chad Brown:chad.brown\@q2labsolutions.com\n" .
+	  "Chad Brown\n" .
 	  "\nCREATED:\n$creation_date\n" .
 	  "\nLAST UPDATED:\n$last_updated\n" .
 	  "\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .

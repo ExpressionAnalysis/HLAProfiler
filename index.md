@@ -1,14 +1,3 @@
-<body>
-<aside id="sidebar">
-<a href="https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master" class="button">
-<small>Download</small>
-.zip file
-</a>
-<a href="https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master" class="button">
-<small>Download</small>
-.tar.gz file
-</a>
-</body>
 
 # HLAProfiler
 

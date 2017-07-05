@@ -48,12 +48,12 @@ Martin Buchkovich (martin.buchkovich@q2labsolutions.com)
 ## License
 Use of this software is limited to non-commercial use under Q Square Solutions Expression Analysis user license. See the [LICENSE](/LICENSE.md) file for more details. 
 
-        <aside id="sidebar">
-          <a href="https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+<aside id="sidebar">
+<a href="https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master" class="button">
+<small>Download</small>
+.zip file
+</a>
+<a href="https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master" class="button">
+<small>Download</small>
+.tar.gz file
+</a>

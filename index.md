@@ -11,8 +11,11 @@ Using HLAProfiler requires two steps, 1) database creation and 2) HLA calling.
 ### Database Creation
 For each allele, HLAProfiler simulates paired-end reads without errors, assigns each read to an HLA gene and calculates the *k*-mer profile using reads from the expected gene. As there are thoussand of alleles in the IPD/IMGT reference database, this step is very time intensive. 
 For convenience, a ready-to-use, downloadable database is available from one of three sources:
+
 1) [GitHub HLAProfiler database only release](https://github.com/ExpressionAnalysis/HLAProfiler/releases/tag/v1.0.0-db_only). To access the full database, download this GitHub release (including the binaries) and make sure the associated binary files (database.idx and database.kdb) are located in the database directory
+
 2) [Q2 Lab Solutions Genomics Bioinformatics website](http://www.q2labsolutions.com/genomics-laboratories/bioinformatics) (Request data at bottom of the page)
+
 3) Request to the authors by [email](mailto:martin.buchkovich@q2labsolutions.com) 
 
 To create a new database, an HLA reference fasta, transcriptome-wide transcript fa and gtf, and an exclusion bed are required. The transcript files and exclusion bed are used to create the distractome, which helps control for homology between HLA genes and other transcripts. The exclusion bed denotes genomic regions to exclude from the distractome. Any reads assigned to the distractome will be excluded from analysis. While we recommend the IPD/IMGT HLA database and GENCODE as the source of these references, any files can be used as long as they adhere to the following naming and format conventions.

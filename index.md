@@ -8,7 +8,7 @@ by simulating paired-end reads from each HLA reference allele without errors, fi
 
 Using HLAProfiler requires two steps, 1) database creation and 2) HLA calling.
 
-###Database Creation
+### Database Creation
 For each allele, HLAProfiler simulates paired-end reads without errors, assigns each read to an HLA gene and calculates the *k*-mer profile using reads from the expected gene. As there are thoussand of alleles in the IPD/IMGT reference database, this step is very time intensive. 
 For convenience, a ready-to-use, downloadable database is available from one of three sources:
 1) [GitHub HLAProfiler database only release](https://github.com/ExpressionAnalysis/HLAProfiler/releases/tag/v1.0.0-db_only). To access the full database, download this GitHub release (including the binaries) and make sure the associated binary files (database.idx and database.kdb) are located in the database directory
@@ -17,23 +17,24 @@ For convenience, a ready-to-use, downloadable database is available from one of 
 
 To create a new database, an HLA reference fasta, transcriptome-wide transcript fa and gtf, and an exclusion bed are required. The transcript files and exclusion bed are used to create the distractome, which helps control for homology between HLA genes and other transcripts. The exclusion bed denotes genomic regions to exclude from the distractome. Any reads assigned to the distractome will be excluded from analysis. While we recommend the IPD/IMGT HLA database and GENCODE as the source of these references, any files can be used as long as they adhere to the following naming and format conventions.
 
-####Reference HLA fasta:
+#### Reference HLA fasta:
 The sequence identifier must follow the format" >ID<tab>AlleleName
 i.e.
 ```
 HLA00001	A*01:01:01:01
 ```
-####Transcript fasta:
+
+#### Transcript fasta:
 Fields of the sequence identifier must be separated by '|' and one of the fields must match the gene_name tag of the GTF annotation field.
 i.e.
 ```
 >ENST00000473358.1|ENSG00000243485.3|OTTHUMG00000000959.2|OTTHUMT00000002840.1|RP11-34P13.3-001|RP11-34P13.3|712|lincRNA|
 ```
 
-####Transcript GTF:
+#### Transcript GTF:
 Standard [GTF](http://www.ensembl.org/info/website/upload/gff.html) format. The annotation column must contain the gene_name tag.
 
-####Exclusion Bed:
+#### Exclusion Bed:
 Standard [BED](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format
 
 Once the proper reference files are downloaded or created the database can be built using the following command:
@@ -47,7 +48,7 @@ For more details on usage run:
 perl HLAProfiler.pl build -h
 ```
 
-###HLA calling:
+### HLA calling:
 HLAProfiler can be used for HLA calling by running the following example command:
 ```
 perl HLAProfiler.pl predict -fastq1 sequencedata_1.fastq.gz -fastq2 sequencedata_2.fastq.gz -database_name database -database_dir /path/to/HLAProfiler -reference /path/to/HLAProfiler/database/data/reference/hla.ref.merged.fa -threads 8 -output_dir /path/to/output/dir -allele_refinement all -kraken_path /path/to/kraken/ -if -l sample.HLAProfiler.log

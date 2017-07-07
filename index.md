@@ -17,26 +17,29 @@ For convenience, a ready-to-use, downloadable database is available from one of 
 
 To create a new database, an HLA reference fasta, transcriptome-wide transcript fa and gtf, and an exclusion bed are required. The transcript files and exclusion bed are used to create the distractome, which helps control for homology between HLA genes and other transcripts. The exclusion bed denotes genomic regions to exclude from the distractome. Any reads assigned to the distractome will be excluded from analysis. While we recommend the IPD/IMGT HLA database and GENCODE as the source of these references, any files can be used as long as they adhere to the following naming and format conventions.
 
-#### Reference HLA fasta:
+#### Required Naming Conventions
+
+###### Reference HLA fasta:
 The sequence identifier must follow the format" >ID<tab>AlleleName
 i.e.
 ```
 HLA00001	A*01:01:01:01
 ```
 
-#### Transcript fasta:
+###### Transcript fasta:
 Fields of the sequence identifier must be separated by '|' and one of the fields must match the gene_name tag of the GTF annotation field.
 i.e.
 ```
 >ENST00000473358.1|ENSG00000243485.3|OTTHUMG00000000959.2|OTTHUMT00000002840.1|RP11-34P13.3-001|RP11-34P13.3|712|lincRNA|
 ```
 
-#### Transcript GTF:
+###### Transcript GTF:
 Standard [GTF](http://www.ensembl.org/info/website/upload/gff.html) format. The annotation column must contain the gene_name tag.
 
-#### Exclusion Bed:
+###### Exclusion Bed:
 Standard [BED](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format
 
+####  Example build commands
 Once the proper reference files are downloaded or created the database can be built using the following command:
 ```
 perl ~/opt/scripts/HLAProfiler/bin/HLAProfiler.pl build -t path/to/transcript.fa.gz -g /path/to/transcript_annotations.gtf.gz -e /path/to/hla_exclue_regions.bed -r /path/to/IMGT_reference.fasta -cwd /path/to/hla_cwd_alleles.txt -o /path/to/output_directory/ -db database_name -kp /path/to/kraken/ -c number_of_threads 

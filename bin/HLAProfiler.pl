@@ -12,7 +12,7 @@ use File::Copy;
 
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "13 Jan 2017";
+my $last_updated = "14 Jul 2017";
 
 my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "\nDESCRIPTION\n" .
@@ -23,6 +23,7 @@ my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "  build\t\t\tBuild the HLAProfiler reference using a reference FASTA\n" .
 	    "  predict\t\tPredict the HLA types using paired end sequencing data.\n" .
 	    "  test_modules\t\tThis modules simply tests whether HLAProfiler.pl can access the required accessory perl modules\n" .
+	    "  test\t\t\tThis modules runs unit tests.\n" .
 	    "\nBuild Module Components. These module complete individual steps in the build module.\n" .
 	    "  create_taxonomy\tCreates a taxonomy needed to create a HLA database\n" .
 	    "  build_taxonomy\tBuilds the taxonomy into a database\n" .
@@ -60,6 +61,55 @@ if($module eq "test_modules"){
 	load "$SCRIPTS_DIR/modules/ReadCounter.pm";
 	load "$SCRIPTS_DIR/modules/HLAPredict.pm";
 	print "Modules loaded successfully\n";	
+}elsif($module eq "test"){
+	my $test_usage = "\n$SCRIPT_NAME test\n" .
+			"\nDESCRIPTION\n" .
+			"Run HLAProfiler unit tests.\n" .
+			"\nUSAGE:\n" .
+			"perl $SCRIPT_NAME test <options>\n" .
+			"\nRequired Options:\n" .
+			"-test|t\t\tDenotes the module to test\n" .
+			"\t\tAvailable_tests:\n" .
+			"\t\tall\n" .
+			"\t\tSequenceFunctions\n" .
+			"\t\tMergeDuplicates\n" .
+			"\t\tHLATaxonomy\n" .
+			"\t\tHLADistractome\n" .
+			"\t\tTaxonomyDivisions\n" .
+			"\t\tRunKraken\n" .
+			"\t\tSimulateReads\n" .
+			"\t\tReadCounter\n" .
+			"\t\tDetermineProfile\n" .
+			"\t\tPairPicker\n" .
+			"\t\tAlleleRefiner\n" .
+			#"\t\tHLAPredict\n" .
+			"\nGeneral options:\n" .
+			"-kraken_path|kp\tbase directory of kraken installation. (default:base directory of path returned by `which kraken`)\n" . 
+			"-directory|td\tlocation of test files. (default:;'.')\n" . 
+			"-output_directory|od\tlocation of temporary output files. (default:;'.')\n" . 
+			"-help|h\t\tprints this help prompt\n" .
+	            	"\nAUTHORS:\n" . 
+	    		"Martin Buchkovich:martin.buchkovich\@q2labsolutions.com\n" .
+	    		"Chad Brown:chad.brown\@q2labsolutions.com\n" .
+	    		"\nCREATED:\n$creation_date\n" .
+	    		"\nLAST UPDATED:\n$last_updated\n" .
+	    		"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
+	    		"\n";
+			  
+	my %test_opts = (directory=>".", output_directory=>".", kraken_path=>$kraken_path);
+	GetOptions(\%test_opts, qw(test|t:s kraken_path|kp:s directory|d:s output_directory|od:s));
+	if($test_opts{help}){
+		print "$test_usage\n";
+		exit;
+	}elsif($test_opts{test} eq ""){
+		print "Please specify a test using -test option.\n$test_usage\n";
+		exit;
+	}else{
+		load "$SCRIPTS_DIR/modules/Tests.pm";
+		Tests::runTests($test_opts{test}, $test_opts{kraken_path}, $test_opts{directory}, $test_opts{output_directory});	
+	}
+
+
 }elsif($module eq "build"){
 	my $build_usage = "\n$SCRIPT_NAME build\n" .
 			"\nDESCRIPTION\n" .

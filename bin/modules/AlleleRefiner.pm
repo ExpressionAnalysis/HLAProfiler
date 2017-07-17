@@ -80,10 +80,10 @@ sub runCommandline{
 	my ($allele_ref, $cov_ref) = detectMutations();
 	my %alleles = %{$allele_ref};
 	my %coverage = %{$cov_ref};
-	foreach my $allele (keys %coverage){
+	foreach my $allele (sort {$a cmp $b} keys %coverage){
 		print "$allele\t$coverage{$allele}{mcon}\t$coverage{$allele}{pcon}\t$coverage{$allele}{mcov}\t$coverage{$allele}{pcov}\n"
 	}
-	foreach my $allele (keys %alleles){
+	foreach my $allele (sort {$a cmp $b} keys  %alleles){
 		if($alleles{$allele}{replace}==1){
 			print "Based on the observed data $allele is really predicted to be $alleles{$allele}{allele} $alleles{$allele}{name}.\n>$alleles{$allele}{allele} $alleles{$allele}{name} " . length($alleles{$allele}{seq}) . " bp\n$alleles{$allele}{seq}\n";
 		}
@@ -261,7 +261,7 @@ sub detectMutations{
 		open(OUT, ">$opts{output}.coverage.txt");
 	}
 	my %coverage_stats = ();
-	for my $allele (keys %reference_counts){
+	for my $allele (sort {$a cmp $b} keys %reference_counts){
 		my $max_continuous = 0;
 		my %pos_hash = %{$reference_counts{$allele}};
 		my $continuous = 0;
@@ -300,12 +300,12 @@ sub detectMutations{
 	foreach my $allele (@candidates){
 		$allele_hash{$allele}{replace}=0;
 	}
-	for my $allele (keys %mismatches){
+	for my $allele (sort {$a cmp $b} keys %mismatches){
 		my %real_mutations = (); 
 		my %positions = %{$mismatches{$allele}};
-		foreach my $pos (keys %positions){
+		foreach my $pos (sort {$a<=>$b} keys %positions){
 			my %bases = %{$positions{$pos}};
-			foreach my $base (keys %bases){
+			foreach my $base (sort {$a cmp $b} keys %bases){
 				my $ref_counts = $reference_counts{$allele}{$pos} || 0;
 				if ($base ne "N" && $bases{$base}>$opts{counts_threshold}){
 					print MOUT "$allele\t$pos\t$base\t$bases{$base}\t$ref_counts\n"  if($opts{print_mismatches});

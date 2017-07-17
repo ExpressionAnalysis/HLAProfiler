@@ -7,7 +7,7 @@ use Getopt::Long;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "12 Jan 2017";
+my $last_updated = "14 Jul 2017";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .
@@ -136,7 +136,7 @@ sub addLibraryToKraken{
         }
 	
 	print $log "$path/kraken-build --add-to-library $file --db $database_dir/$database_name\n";
-	open (IN, "$path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 |");
+	open (IN, "$path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 |") or (print "Errors running $path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 \n" && exit 1);
 	while(<IN>){
 		print $log $_;
 	}

@@ -213,7 +213,7 @@ sub createHLATaxonomy{
 	#$d3 = synonomous substitutions: genus level 6-digit
 	#$d4 = non-coding changes: species level 8-digit
 	
-	foreach my $class (keys %tree){
+	foreach my $class (sort {$a cmp $b} keys %tree){
 		my %phash = %{$tree{$class}};
 		foreach my $protein (sort keys %phash){
 			if(ref($phash{$protein}) eq "HASH"){ 

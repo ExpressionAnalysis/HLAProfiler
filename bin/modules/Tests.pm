@@ -9,7 +9,6 @@ use File::Slurp;
 use File::Compare;
 use Storable;
 use FindBin;
-use local::lib;
 use Test::Trap qw/ :output(systemsafe) /;
 use lib "$FindBin::Bin/../bin/modules";
 

@@ -1,3 +1,7 @@
+---
+title: HLAProfiler License
+---
+
 ##COPYRIGHT AND PERMISSION NOTICE
 Software:  HLAProfiler
 Copyright (c) 2016,2017 Q Squared Solutions Expression Analysis LLC

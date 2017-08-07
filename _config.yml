@@ -1,5 +1,5 @@
 theme: jekyll-theme-architect
 repository: ExpressionAnalysis/HLAProfiler
-site.github.show_downloads: true
+show_downloads: true
 gems:
   - jekyll-seo-tag

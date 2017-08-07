@@ -146,4 +146,4 @@ HLAProfiler.pl test -h
 Martin Buchkovich (martin.buchkovich@q2labsolutions.com)
 
 ## License
-Use of this software is limited to non-commercial use under Q Square Solutions Expression Analysis user license. See the [LICENSE](/LICENSE.md) file for more details. 
+Use of this software is limited to non-commercial use under Q Square Solutions Expression Analysis user license. See the [LICENSE](/HLAProfiler/LICENSE.md) file for more details. 

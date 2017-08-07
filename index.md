@@ -18,11 +18,11 @@ For convenience, a ready-to-use, downloadable database is available from one of 
 
 3) Request to the authors by [email](mailto:martin.buchkovich@q2labsolutions.com) 
 
-To create a new database, an HLA reference fasta, transcriptome-wide transcript fa and gtf, and an exclusion bed are required. The transcript files and exclusion bed are used to create the distractome, which helps control for homology between HLA genes and other transcripts. The exclusion bed denotes genomic regions to exclude from the distractome. Any reads assigned to the distractome will be excluded from analysis. While we recommend the IPD/IMGT HLA database and GENCODE as the source of these references, any files can be used as long as they adhere to the following naming and format conventions.
+To create a new database, an HLA reference fasta, transcriptome-wide transcript fa and gtf, an exclusion bed, and a hla CWD allele file are required. The transcript files and exclusion bed are used to create the distractome, which helps control for homology between HLA genes and other transcripts. The exclusion bed denotes genomic regions to exclude from the distractome. Any reads assigned to the distractome will be excluded from analysis. While we recommend the IPD/IMGT HLA database and GENCODE as the source of these references, any files can be used as long as they adhere to the following naming and format conventions.
 
 #### Required Naming Conventions
 
-###### Reference HLA fasta:
+###### HLA Reference fasta:
 The sequence identifier must follow the format" >ID<tab>AlleleName
 i.e.
 ```
@@ -39,13 +39,16 @@ i.e.
 ###### Transcript GTF:
 Standard [GTF](http://www.ensembl.org/info/website/upload/gff.html) format. The annotation column must contain the gene_name tag.
 
-###### Exclusion Bed:
+###### HLA Exclusion Bed:
 Standard [BED](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format
+
+###### HLA CWD allele file
+This file should list the ID from the reference fasta of alleles that should be considered common and well documented. Under some circumstances where the observed and reference profiles of the top allele do not closely match and the top two allele pairs have similar scores, the final prediction will be weighted in favor of the common and well documented alleles. 
 
 ####  Example build commands
 Once the proper reference files are downloaded or created the database can be built using the following command:
 ```
-perl ~/opt/scripts/HLAProfiler/bin/HLAProfiler.pl build -t path/to/transcript.fa.gz -g /path/to/transcript_annotations.gtf.gz -e /path/to/hla_exclue_regions.bed -r /path/to/IMGT_reference.fasta -cwd /path/to/hla_cwd_alleles.txt -o /path/to/output_directory/ -db database_name -kp /path/to/kraken/ -c number_of_threads 
+perl ~/opt/scripts/HLAProfiler/bin/HLAProfiler.pl build -t path/to/transcript.fasta -g /path/to/transcript_annotations.gtf -e /path/to/hla_exclusion.bed -r /path/to/hla.reference.fasta -cwd /path/to/hla_cwd_alleles.txt -o /path/to/output_directory/ -db database_name -kp /path/to/kraken/ -c number_of_threads 
 ```
 HLA alleles can be processed in parallel and given the thousands of alleles that need processing we recommend specifying multiple threads using the -c option.
 
@@ -70,7 +73,46 @@ perl HLAProfiler.pl predict -h
 Accurate HLA calling in RNA-seq data, extends the utility and increases the information of this data. HLAProfiler fills the gap of existing tools by improving accuracy for some HLA genes, identifying rare alleles, and correctly identifying novel alleles and alleles with incomplete reference data.
 
 ## Installation
+HLAProfiler can be installed on Linux/OSX from the bioconda repository, or using the GitHub release directly. For the smoothest installation, we strongly recommend the bionconda installation.
 
+### Bioconda (recommended)
+For the latest and most comprehensive instruction on installing bioconda visit [https://bioconda.github.io/]. For convenience the steps have been summarized here.
+
+#### Install miniconda
+Download the latest version of [Miniconda](https://conda.io/miniconda.html) (Python 3 recommended) and run the installer. For more details on miniconda installation visit [https://conda.io/docs/install/quick.html]. After installation be sure to restart the terminal session for your changes to take effect.
+
+##### OS X
+```
+bash Miniconda3-latest-MacOSX-x86_64.sh 
+```
+
+###### Linux
+```
+bash Miniconda3-latest-Linux-x86_64.sh
+ or 
+bash Miniconda3-latest-Linux-x86.sh
+
+```
+
+#### Set up channels
+```
+conda config --add channels defaults
+conda config --add channels conda-forge
+conda config --add channels bioconda
+
+```
+#### Install hlaprofiler
+```
+conda install hlaprofiler
+
+```
+
+#### Location of executables
+To run HLAProfiler you will need to know the location of the HLAProfiler script as well as the classify executable from Kraken.
+The HLAProfiler script should be located in the miniconda bin directory (/path/to/minconda/bin/). The classify executable will be found in the kraken-ea directory under the share directory (/path/to/miniconda/share/kraken-ea-*version*/).
+
+
+### Github installation
 For automatic installation, download and unzip the HLAProfiler GitHub release tarball or clone the git repository into the directory where you want the package to be installed ("/path/to/HLAProfiler")
 ```
 cd /path/to/HLAProfiler
@@ -78,15 +120,27 @@ perl bin/install.pl –d /path/to/install_dir/ -m wget –b /bin/directory/in/PA
 ```
 The installer will retrieve the dependencies and place them in /bin/directory/in/PATH
 
-Database download:
-The database is included in the initial GitHub release.
+#### Location of executables
+If using the automated installer kraken (/path/to/kraken) will be located in bin/kraken-version/ under the HLAProfiler directory. 
 
 ## Tests
+HLAProfiler has modules that allow for testing that the software is working correctly
+
+### Test module installation
+This test_modules module will test to see all require HLAProfiler modules are accessible by the main script
 ```
-cd /path/to/HLAProfiler/ test 
-perl run_tests.pl –t all –kp /path/to/kraken
+HLAProfiler.pl test_modules
 ```
-If using the automated installer kraken (/path/to/kraken) will be located in bin/kraken-version/ under the HLAProfiler directory. 
+
+### Unit tests
+The test module will start the unit test. Test files will be installed in /path/to/miniconda/usr/local/share/hlaprofiler_tests/ for bioconda installations or /path/to/HLAProfiler/test/
+```
+HLAProfiler.pl test –t all –kp /path/to/kraken -td /path/to/test/directory/ -od /path/to/output/directory
+```
+Test can also be run on individual modules. To see the list of available modules execute:
+```
+HLAProfiler.pl test -h
+```
 
 ## Contact
 Martin Buchkovich (martin.buchkovich@q2labsolutions.com)

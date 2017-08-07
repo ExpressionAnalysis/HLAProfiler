@@ -564,12 +564,14 @@ pre {
   text-shadow: none;
   background: #fff;
   border: solid 1px #f2f2f2;
+  white-space: pre-wrap
 }
 pre code {
   padding: 0;
   color: #2879d0;
   background-color: #fff;
   border: none;
+  white-space: pre-wrap
 }
 
 ul, ol, dl {

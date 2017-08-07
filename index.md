@@ -1,3 +1,4 @@
+The zip download is {{site.github.zip_url}}
 ## What is it?
 
 HLAProfiler uses the *k*-mer content of next generation sequencing reads to call HLA types in a sample. Based on the *k*-mer content each each read pair is assigned to an HLA gene and the aggregate *k*-mer profile for the gene is compared to reference *k*-mer profiles to determin the HLA type. Currently HLAProfiler only supports paired-end RNA-seq data.

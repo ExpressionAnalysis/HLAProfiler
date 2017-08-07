@@ -1,5 +1,5 @@
-github.zip_url: https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master
-github.tar_url: https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master
+zip_url: https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master
+tar_url: https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master
 theme: jekyll-theme-architect
 repository: ExpressionAnalysis/HLAProfiler
 show_downloads: true

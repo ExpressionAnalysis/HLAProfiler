@@ -1,4 +1,4 @@
 theme: jekyll-theme-architect
-site.github.show_downloads: true
+show_downloads: true
 gems:
   - jekyll-seo-tag

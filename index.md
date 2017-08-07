@@ -101,7 +101,7 @@ conda config --add channels conda-forge
 conda config --add channels bioconda
 
 ```
-#### Install hlaprofiler
+#### Install HLAProfiler
 ```
 conda install hlaprofiler
 

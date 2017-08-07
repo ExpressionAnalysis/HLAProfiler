@@ -1,7 +1,7 @@
 theme: jekyll-theme-architect
 repository: ExpressionAnalysis/HLAProfiler
-site.github.zip_url: https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master
-site.github.tar_url: https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master
+site.zip_url: https://github.com/ExpressionAnalysis/HLAProfiler/zipball/master
+site.tar_url: https://github.com/ExpressionAnalysis/HLAProfiler/tarball/master
 show_downloads: true
 gems:
   - jekyll-seo-tag

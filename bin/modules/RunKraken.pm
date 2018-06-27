@@ -7,7 +7,8 @@ use Getopt::Long;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "14 Jul 2017";
+my $last_updated = "18 Jan 2018";
+
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .
@@ -110,10 +111,12 @@ sub buildKraken{
 	$options=~s/^'//;	
 	$options=~s/'$//;	
 	print $log "$path/kraken-build --build $options --threads=$threads --db $database_dir/$database_name\n";
-	open (IN, "$path/kraken-build --build $options --threads=$threads --db $database_dir/$database_name 2>&1|");
-	while(<IN>){
+	my $fh;
+	open ($fh, "$path/kraken-build --build $options --threads=$threads --db $database_dir/$database_name 2>&1|");
+	while(<$fh>){
 		print $log $_;
 	}
+	close ($fh);
 	close ($log) if ($is_log_file == 1);
 	return($?);
 }
@@ -136,10 +139,12 @@ sub addLibraryToKraken{
         }
 	
 	print $log "$path/kraken-build --add-to-library $file --db $database_dir/$database_name\n";
-	open (IN, "$path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 |") or (print "Errors running $path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 \n" && exit 1);
-	while(<IN>){
+	my $fh;
+	open ($fh, "$path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 |") or (print "Errors running $path/kraken-build --add-to-library $file --db $database_dir/$database_name 2>&1 \n" && exit 1);
+	while(<$fh>){
 		print $log $_;
 	}
+	close ($fh);
 	close ($log) if ($is_log_file == 1);
 	return($?);
 }

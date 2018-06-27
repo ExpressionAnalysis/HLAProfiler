@@ -7,7 +7,7 @@ use Getopt::Long;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "6 Mar 2011";
-my $last_updated = "12 Jan 2017";
+my $last_updated = "18 Jan 2018";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .

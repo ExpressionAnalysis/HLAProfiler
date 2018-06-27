@@ -149,8 +149,8 @@ sub readFile{
 		open($fh1, "${input}_1.fastq") || (print STDERR "Cannot open file ${input}_1.fastq\n" and exit 1);
 		open($fh2, "${input}_2.fastq") || (print STDERR "Cannot open file ${input}_2.fastq\n" and exit 1);
 	}elsif (-e "${input}_1.fq.gz"){
-		open($fh1, "${input}_1.fq.gz") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" and exit 1);
-		open($fh2, "${input}_2.fq.gz") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" and exit 1);
+		open($fh1, "gunzip -c ${input}_1.fq.gz |") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" and exit 1);
+		open($fh2, "gunzip -c ${input}_2.fq.gz |") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" and exit 1);
 	}elsif (-e "${input}_1.fq"){
 		open($fh1, "${input}_1.fq") || (print STDERR "Cannot open file ${input}_1.fq\n" and exit 1);
 		open($fh2, "${input}_2.fq") || (print STDERR "Cannot open file ${input}_2.fq\n" and exit 1);

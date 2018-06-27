@@ -99,6 +99,7 @@ sub run_Commandline{
 	if($opts{output}){
 		open($out, ">$opts{output}");
 	}
+	print $out "Allele1_Accession\tAllele2_Accession\tAllele1\tAllele2\tProportion_reads\tProportion_signal\tCorrelation\tError\tPair_score\tFinal_score\tAllele1 Comments\tAllele2 Comments\n";
 	print $out "$answer";
 	close($out);
 }
@@ -263,381 +264,381 @@ sub predictHLAType{
 
 	#Create union set of primers to be used in correlations
 	%combined_kmers=();
-		findCombinedKmers(\%sig,\%kmer_keys,\@topAlleles, $lower_thresh);
-		my %allele_pairs = ();
-		my $offset = 1 /($read_cnt*2);
+	findCombinedKmers(\%sig,\%kmer_keys,\@topAlleles, $lower_thresh);
+	my %allele_pairs = ();
+	my $offset = 1 /($read_cnt*2);
+	
+	##For each pair of possible alleles. Calculate:
+	##Correlation of observed profile and profile profile
+	##Proportion of signal accounted for by the observed reads
+	##Proportion of reads that account for the signal
+	##Error (1-proportion of reads)+(1-proportion of signal)+(1-correlation)
+	for(my $i =0; $i<=$#topAlleles; $i++){
+		for(my $j =0; $j<=$#topAlleles; $j++){
+			if($i<=$j){
+				my ($cor, $propReads, $propSignal) = getSSE($topAlleles[$i], $topAlleles[$j], $total_cnts, ($allele_cnts{$topAlleles[$i]} + $allele_cnts{$topAlleles[$j]}), $offset, \%sig);
+				#my @result = ("$i$j", $topAlleles[$i], $topAlleles[$j],$cor, $propReads, $propSignal);
+				#$fm->finish(0,\@result);
 		
-		##For each pair of possible alleles. Calculate:
-		##Correlation of observed profile and profile profile
-		##Proportion of signal accounted for by the observed reads
-		##Proportion of reads that account for the signal
-		##Error (1-proportion of reads)+(1-proportion of signal)+(1-correlation)
-		for(my $i =0; $i<=$#topAlleles; $i++){
-			for(my $j =0; $j<=$#topAlleles; $j++){
-				if($i<=$j){
-					my ($cor, $propReads, $propSignal) = getSSE($topAlleles[$i], $topAlleles[$j], $total_cnts, ($allele_cnts{$topAlleles[$i]} + $allele_cnts{$topAlleles[$j]}), $offset, \%sig);
-					#my @result = ("$i$j", $topAlleles[$i], $topAlleles[$j],$cor, $propReads, $propSignal);
-					#$fm->finish(0,\@result);
-			
-					$allele_pairs{"$i$j"}{allele1}=$topAlleles[$i];	
-					$allele_pairs{"$i$j"}{allele2}=$topAlleles[$j];
-					$allele_pairs{"$i$j"}{comment1}=$allele_map{$topAlleles[$j]}{comment};
-					$allele_pairs{"$i$j"}{comment2}=$allele_map{$topAlleles[$j]}{comment};
-					$allele_pairs{"$i$j"}{cor}=$cor;	
-					$allele_pairs{"$i$j"}{propReads}=$propReads;	
-					$allele_pairs{"$i$j"}{propSignal}=$propSignal;	
-					$allele_pairs{"$i$j"}{error}=(1-$propSignal)+(1-$propReads)+(1-$cor);	
-				}
+				$allele_pairs{"$i$j"}{allele1}=$topAlleles[$i];	
+				$allele_pairs{"$i$j"}{allele2}=$topAlleles[$j];
+				$allele_pairs{"$i$j"}{comment1}=$allele_map{$topAlleles[$j]}{comment};
+				$allele_pairs{"$i$j"}{comment2}=$allele_map{$topAlleles[$j]}{comment};
+				$allele_pairs{"$i$j"}{cor}=$cor;	
+				$allele_pairs{"$i$j"}{propReads}=$propReads;	
+				$allele_pairs{"$i$j"}{propSignal}=$propSignal;	
+				$allele_pairs{"$i$j"}{error}=(1-$propSignal)+(1-$propReads)+(1-$cor);	
 			}
 		}
-		
-		##Identifies the finalists and creates the candidate list of the PairPicker module
-		my $pair_cnt=1;
-		my $candidates = "";
-		my @finalists=();
-		my $prev_error = "";
-		foreach my $pair (sort {$allele_pairs{$a}{error}<=>$allele_pairs{$b}{error}} keys %allele_pairs){
-			if($pair_cnt>$opts{numFinalists} && $allele_pairs{$pair}{error} != $prev_error){
-				last;
-			}
-			elsif($pair ne ""){
-				$candidates .= "$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2},";
-				#push(@finalists, "$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2}";
-				$prev_error = $allele_pairs{$pair}{error};
-				push(@finalists, "$pair");
-				$pair_cnt++;
-			}
+	}
+	
+	##Identifies the finalists and creates the candidate list of the PairPicker module
+	my $pair_cnt=1;
+	my $candidates = "";
+	my @finalists=();
+	my $prev_error = "";
+	foreach my $pair (sort {$allele_pairs{$a}{error}<=>$allele_pairs{$b}{error}} keys %allele_pairs){
+		if($pair_cnt>$opts{numFinalists} && $allele_pairs{$pair}{error} != $prev_error){
+			last;
 		}
-		$candidates=~s/,$//;
-		
-		
-		my $fq_prefix = $prefix;
-		$fq_prefix =~s/.*\///;
-		$fq_prefix=~s/\.$opts{gene}$//;
-
-		##The PairPicker module does pairwise comparison between candidate allele pairs to identify reads the map perfectly and uniquely to one allele pair but not the other. This returns a matrix. For each comparison of row(r) vs. col(c) the matrix contains the count of reads unique to r in [r,c] and unique to c in [c,r]
-		load "$opts{scripts_dir}/modules/PairPicker.pm";
-		my ($pp_results_ref,$pp_candidates_ref, $pp_unique_counts) = PairPicker->runModule("$opts{fastq_dir}/$fq_prefix", $opts{reference},$candidates,$opts{gene}, $opts{minQuality}, $opts{pp_scale}, $opts{scripts_dir}, 0);
-		
-		##Sums the columns and rows from the PairPicker matrix. The row counts are counts unique to the allele pair of the row for that allele pair and the column counts contain the counts   
-		my $sums_ref = sumMatrix($pp_results_ref,\@finalists,($read_cnt*2)/10000);
-		my %matrix_sums = %{$sums_ref};
-
-		my $min_pp_reads = 10;
-		my $max_pp_reads = 100;
-		
-		my $power = $opts{PairPickerPower};
-		##PairPicker matrices with low counts are more sensitive to sequencing error can falsely increase the score of incorrect alleles 
-		if($pp_unique_counts < $min_pp_reads){
-			$power = 0;	
-		}elsif($pp_unique_counts < $max_pp_reads){
-			$power = ($pp_unique_counts/$max_pp_reads)*$power;
-		}	
-
-		##Calculates the pp_score and then the final score
-		my %final_scores = ();
-		foreach my $pair (keys %matrix_sums){
-			$allele_pairs{$pair}{error} = .000001 if ($allele_pairs{$pair}{error}==0);
-			$allele_pairs{$pair}{pp_score} = ($matrix_sums{$pair}{row}/$matrix_sums{$pair}{col})**$power;
-			if($power == 0){
-				$allele_pairs{$pair}{pp_score} = 1;
-			}
-			$matrix_sums{$pair}{col}=1 if ($matrix_sums{$pair}{col}==0);
-			$final_scores{$pair} = $allele_pairs{$pair}{pp_score}/$allele_pairs{$pair}{error};
+		elsif($pair ne ""){
+			$candidates .= "$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2},";
+			#push(@finalists, "$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2}";
+			$prev_error = $allele_pairs{$pair}{error};
+			push(@finalists, "$pair");
+			$pair_cnt++;
 		}
-		
-		my $max_score = 0;
-		
-		my %answers = ();
-		my $answer = "";
-		my $answer_cnt = 0;
-		my $refine = 0;
-		my $predict = 0;
-		my $recalculate = 0;
+	}
+	$candidates=~s/,$//;
+	
+	
+	my $fq_prefix = $prefix;
+	$fq_prefix =~s/.*\///;
+	$fq_prefix=~s/\.$opts{gene}$//;
 
-		if($opts{allele_refinement} eq "all"){
-			$refine = 1;
-			$predict = 1;
-			$recalculate = 1;
-		}elsif($opts{allele_refinement} eq "refine_only"){
-			$refine = 1;
-		}elsif($opts{allele_refinement} eq "predict_only"){
-			$predict = 1;
-		}elsif($opts{allele_refinement} eq "refineAndPredict"){
-			$refine = 1; 
-			$predict = 1;
-		}elsif($opts{allele_refinement} eq "none"){
-		}else{
-			print $log "-allele_refinement entry $opts{allele_refinement} is not a valid option. Using default of \"all\"\n"; 
-			$refine = 1;
-			$predict = 1;
-			$recalculate = 1;
+	##The PairPicker module does pairwise comparison between candidate allele pairs to identify reads the map perfectly and uniquely to one allele pair but not the other. This returns a matrix. For each comparison of row(r) vs. col(c) the matrix contains the count of reads unique to r in [r,c] and unique to c in [c,r]
+	load "$opts{scripts_dir}/modules/PairPicker.pm";
+	my ($pp_results_ref,$pp_candidates_ref, $pp_unique_counts) = PairPicker->runModule("$opts{fastq_dir}/$fq_prefix", $opts{reference},$candidates,$opts{gene}, $opts{minQuality}, $opts{pp_scale}, $opts{scripts_dir}, 0);
+	
+	##Sums the columns and rows from the PairPicker matrix. The row counts are counts unique to the allele pair of the row for that allele pair and the column counts contain the counts   
+	my $sums_ref = sumMatrix($pp_results_ref,\@finalists,($read_cnt*2)/10000);
+	my %matrix_sums = %{$sums_ref};
+
+	my $min_pp_reads = 10;
+	my $max_pp_reads = 100;
+	
+	my $power = $opts{PairPickerPower};
+	##PairPicker matrices with low counts are more sensitive to sequencing error can falsely increase the score of incorrect alleles 
+	if($pp_unique_counts < $min_pp_reads){
+		$power = 0;	
+	}elsif($pp_unique_counts < $max_pp_reads){
+		$power = ($pp_unique_counts/$max_pp_reads)*$power;
+	}	
+
+	##Calculates the pp_score and then the final score
+	my %final_scores = ();
+	foreach my $pair (keys %matrix_sums){
+		$allele_pairs{$pair}{error} = .000001 if ($allele_pairs{$pair}{error}==0);
+		$allele_pairs{$pair}{pp_score} = ($matrix_sums{$pair}{row}/$matrix_sums{$pair}{col})**$power;
+		if($power == 0){
+			$allele_pairs{$pair}{pp_score} = 1;
 		}
-	 
-		my @topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
-		
-		## This will run AlleleRefiner which predicts updated or novel allele sequences based on the observed data
-		if($refine == 1 || $predict ==1){
-			my $pair = $topPairs[0];
-			load "$opts{scripts_dir}/modules/AlleleRefiner.pm";
-			my ($allele_ref, $cov_ref) = AlleleRefiner->runModule($opts{gene},"$opts{fastq_dir}/$fq_prefix.$opts{gene}","$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2}",$opts{reference},20,2,20,1,.75,$opts{scripts_dir},"$opts{out_dir}/$opts{gene}.refinement" ,1,0,0);
-			my $original_allele1 = $allele_pairs{$pair}{allele1};
-			my $original_allele2 = $allele_pairs{$pair}{allele2};
-			my $new_name1 = $allele_map{$original_allele1}{names};
-			my $new_name2 = $allele_map{$original_allele2}{names};
-			my $new_allele1 = $original_allele1;
-			my $new_allele2 = $original_allele2;
-			my $rcomment1 = "";
-			my $rcomment2 = "";
+		$matrix_sums{$pair}{col}=1 if ($matrix_sums{$pair}{col}==0);
+		$final_scores{$pair} = $allele_pairs{$pair}{pp_score}/$allele_pairs{$pair}{error};
+	}
+	
+	my $max_score = 0;
+	
+	my %answers = ();
+	my $answer = "";
+	my $answer_cnt = 0;
+	my $refine = 0;
+	my $predict = 0;
+	my $recalculate = 0;
 
-			if($allele_ref->{$original_allele1}{replace}==1){
-				$new_allele1 = $allele_ref->{$original_allele1}{allele};
-				if($allele_ref->{$original_allele1}{novel} ==1 && $predict==1){
-					$new_name1 = $allele_ref->{$original_allele1}{name};	
-					$rcomment1 =" Predicted novel allele based on differences between top allele $original_allele1 and observed data.";
-				}elsif($allele_ref->{$original_allele1}{novel} ==0){
-					$new_name1 = $allele_ref->{$original_allele1}{name};	
-					$rcomment1 =" $new_allele1 is a perfect subset of predicted allele1 sequence based on $original_allele1 and observed reads."; 	
-				}	
-			}
-			if($allele_ref->{$original_allele2}{replace}==1){
-				$new_allele2 = $allele_ref->{$original_allele2}{allele};
-				if($allele_ref->{$original_allele2}{novel} ==1 && $predict==1){	
-					$new_name2 = $allele_ref->{$original_allele2}{name};	
-					$rcomment2 =" Predicted novel allele based on differences between top allele $original_allele2 and observed data.";
-				}elsif($allele_ref->{$original_allele2}{novel} ==0){
-					$new_name2 = $allele_ref->{$original_allele2}{name};	
-					$rcomment2 =" $new_allele2 is a perfect subset of predicted allele2 sequence based on $original_allele2 and observed reads.";
-				}	
-			}
-			if($recalculate == 1 && ($allele_ref->{$original_allele1}{replace}==1 ||$allele_ref->{$original_allele2}{replace}==1)){
-				##Add new sequence to profile
-				my ($cor, $propReads, $propSignal, $new_reference) = createProfileAndCalculateSignal($opts{gene},$new_allele1, $new_allele2, $new_name1, $new_name2, $allele_ref->{$original_allele1}{replace}, $allele_ref->{$original_allele2}{replace}, $allele_ref->{$original_allele1}{seq}, $allele_ref->{$original_allele2}{seq}, $total_cnts, $offset,\%sig, \%kmer_keys, \%sig_kmers,\%allele_cnts, $opts{reference}); 
-				
-				my $pair = "novel";	
-				$allele_map{$new_allele1}{names}=$new_name1;
-				$allele_map{$new_allele2}{names}=$new_name2;
-				$allele_map{$new_allele1}{comment}=$rcomment1;
-				$allele_map{$new_allele2}{comment}=$rcomment2;
-				$allele_pairs{$pair}{allele1}=$new_allele1;	
-				$allele_pairs{$pair}{allele2}=$new_allele2;
-				$allele_pairs{$pair}{comment1}=$rcomment1;
-				$allele_pairs{$pair}{comment2}=$rcomment2;
-				$allele_pairs{$pair}{cor}=$cor;	
-				$allele_pairs{$pair}{propReads}=$propReads;	
-				$allele_pairs{$pair}{propSignal}=$propSignal;	
-				$allele_pairs{$pair}{error}=(1-$propSignal)+(1-$propReads)+(1-$cor);
-				$candidates .= ",$new_allele1|$new_allele2";
-				push @finalists, "novel";	
-				
-				##Re-run pair picker with new allele pair
-				($pp_results_ref,$pp_candidates_ref, $pp_unique_counts) = PairPicker->runModule("$opts{fastq_dir}/$fq_prefix", $new_reference,$candidates, $opts{gene}, $opts{minQuality}, $opts{pp_scale}, $opts{scripts_dir}, 0);
-				$sums_ref = sumMatrix($pp_results_ref,\@finalists,($read_cnt*2)/10000);
-				%matrix_sums = %{$sums_ref};
-				
-				$power = $opts{PairPickerPower};
-				if($pp_unique_counts < 10){
-					$power = 0;	
-				}elsif($pp_unique_counts < 100){
-					$power = (($pp_unique_counts-10)/90)*$power;
-				}	
+	if($opts{allele_refinement} eq "all"){
+		$refine = 1;
+		$predict = 1;
+		$recalculate = 1;
+	}elsif($opts{allele_refinement} eq "refine_only"){
+		$refine = 1;
+	}elsif($opts{allele_refinement} eq "predict_only"){
+		$predict = 1;
+	}elsif($opts{allele_refinement} eq "refineAndPredict"){
+		$refine = 1; 
+		$predict = 1;
+	}elsif($opts{allele_refinement} eq "none"){
+	}else{
+		print $log "-allele_refinement entry $opts{allele_refinement} is not a valid option. Using default of \"all\"\n"; 
+		$refine = 1;
+		$predict = 1;
+		$recalculate = 1;
+	}
+ 
+	my @topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
+	
+	## This will run AlleleRefiner which predicts updated or novel allele sequences based on the observed data
+	if($refine == 1 || $predict ==1){
+		my $pair = $topPairs[0];
+		load "$opts{scripts_dir}/modules/AlleleRefiner.pm";
+		my ($allele_ref, $cov_ref) = AlleleRefiner->runModule($opts{gene},"$opts{fastq_dir}/$fq_prefix.$opts{gene}","$allele_pairs{$pair}{allele1}|$allele_pairs{$pair}{allele2}",$opts{reference},20,2,20,1,.75,$opts{scripts_dir},"$opts{out_dir}/$opts{gene}.refinement" ,1,0,0);
+		my $original_allele1 = $allele_pairs{$pair}{allele1};
+		my $original_allele2 = $allele_pairs{$pair}{allele2};
+		my $new_name1 = $allele_map{$original_allele1}{names};
+		my $new_name2 = $allele_map{$original_allele2}{names};
+		my $new_allele1 = $original_allele1;
+		my $new_allele2 = $original_allele2;
+		my $rcomment1 = "";
+		my $rcomment2 = "";
 
-				%final_scores = ();
-				foreach my $pair (keys %matrix_sums){
-					$allele_pairs{$pair}{error} = .000001 if ($allele_pairs{$pair}{error}==0);
-					$allele_pairs{$pair}{pp_score} = ($matrix_sums{$pair}{row}/$matrix_sums{$pair}{col})**$power;
-					if($power == 0){
-						$allele_pairs{$pair}{pp_score} = 1;
-					}
-					$matrix_sums{$pair}{col}=1 if ($matrix_sums{$pair}{col}==0);
-					$final_scores{$pair} = $allele_pairs{$pair}{pp_score}/$allele_pairs{$pair}{error};		
-				}		
-			}elsif($allele_ref->{$original_allele1}{replace}==1 ||$allele_ref->{$original_allele2}{replace}==1){
-				$allele_map{$original_allele1}{names}=$new_name1;
-				$allele_map{$original_allele2}{names}=$new_name2;
-				$allele_pairs{$pair}{comment1}.="$rcomment1";
-				$allele_pairs{$pair}{comment2}.="$rcomment2";
-				$allele_pairs{$pair}{allele1}=$new_allele1;
-				$allele_pairs{$pair}{allele2}=$new_allele2;
-			}
-		}
-
-		@topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
-
-		##When the proportion of signal is low, there is an enrichment of cases where the rare allele just edges out the correct common allele. In these cases more weight is given to the common allele
-		if($allele_pairs{$topPairs[0]}{propSignal}<.98 && ($final_scores{$topPairs[0]} - $final_scores{$topPairs[1]})<0.5){
-			foreach my $pair (@topPairs){
-				my $common = 0;
-				my $cwd1 = $allele_map{$allele_pairs{$pair}{allele1}}{cwd} || 0;
-				my $cwd2 = $allele_map{$allele_pairs{$pair}{allele2}}{cwd} || 0;
-				$common++ if ($cwd1 ==1);
-				$common++ if ($cwd2 ==1);
-				my $boost = $final_scores{$pair} * (0.03*$common);
-				$final_scores{$pair}+=$boost;
-			}
-			@topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
-		}
-
-		foreach my $pair (@topPairs){
-			if($answer_cnt < 20){
-				$max_score = $final_scores{$pair};
-				$answers{$pair}{allele1}=$allele_map{$allele_pairs{$pair}{allele1}}||$allele_pairs{$pair}{allele1};
-				$answers{$pair}{allele2}=$allele_map{$allele_pairs{$pair}{allele2}}||$allele_pairs{$pair}{allele2};
-				$answers{$pair}{propSig}=$allele_pairs{$pair}{propSignal};
-				$answers{$pair}{propReads}=$allele_pairs{$pair}{propReads};
-				$answers{$pair}{cor}=$allele_pairs{$pair}{cor};
-				$answers{$pair}{error}=$allele_pairs{$pair}{error};
-				$answers{$pair}{pp_score}=$allele_pairs{$pair}{pp_score};
-				$answers{$pair}{final_score}=$final_scores{$pair};
-				my $comment1 = $allele_pairs{$pair}{comment1} || "";
-				my $comment2 = $allele_pairs{$pair}{comment2} || "";
-				$answer .= "$allele_pairs{$pair}{allele1}\t$allele_pairs{$pair}{allele2}\t$answers{$pair}{allele1}{names}\t$answers{$pair}{allele2}{names}\t$answers{$pair}{propReads}\t$answers{$pair}{propSig}\t$answers{$pair}{cor}\t$answers{$pair}{error}\t$answers{$pair}{pp_score}\t$answers{$pair}{final_score}\t$comment1\t$comment2\n";
-				$answer_cnt++;	
-			}else{
-				last;	
+		if($allele_ref->{$original_allele1}{replace}==1){
+			$new_allele1 = $allele_ref->{$original_allele1}{allele};
+			if($allele_ref->{$original_allele1}{novel} ==1 && $predict==1){
+				$new_name1 = $allele_ref->{$original_allele1}{name};	
+				$rcomment1 =" Predicted novel allele based on differences between top allele $original_allele1 and observed data.";
+			}elsif($allele_ref->{$original_allele1}{novel} ==0){
+				$new_name1 = $allele_ref->{$original_allele1}{name};	
+				$rcomment1 =" $new_allele1 is a perfect subset of predicted allele1 sequence based on $original_allele1 and observed reads."; 	
 			}	
 		}
-		if($answer eq "" || $max_score == 0){
-			$answer = "HLA\tHLA\t$opts{gene}\t$opts{gene}\t-\t-\t-\t-\t-\t-\tNo call made\t\n";
+		if($allele_ref->{$original_allele2}{replace}==1){
+			$new_allele2 = $allele_ref->{$original_allele2}{allele};
+			if($allele_ref->{$original_allele2}{novel} ==1 && $predict==1){	
+				$new_name2 = $allele_ref->{$original_allele2}{name};	
+				$rcomment2 =" Predicted novel allele based on differences between top allele $original_allele2 and observed data.";
+			}elsif($allele_ref->{$original_allele2}{novel} ==0){
+				$new_name2 = $allele_ref->{$original_allele2}{name};	
+				$rcomment2 =" $new_allele2 is a perfect subset of predicted allele2 sequence based on $original_allele2 and observed reads.";
+			}	
 		}
-		return($answer);
+		if($recalculate == 1 && ($allele_ref->{$original_allele1}{replace}==1 ||$allele_ref->{$original_allele2}{replace}==1)){
+			##Add new sequence to profile
+			my ($cor, $propReads, $propSignal, $new_reference) = createProfileAndCalculateSignal($opts{gene},$new_allele1, $new_allele2, $new_name1, $new_name2, $allele_ref->{$original_allele1}{replace}, $allele_ref->{$original_allele2}{replace}, $allele_ref->{$original_allele1}{seq}, $allele_ref->{$original_allele2}{seq}, $total_cnts, $offset,\%sig, \%kmer_keys, \%sig_kmers,\%allele_cnts, $opts{reference}); 
+			
+			my $pair = "novel";	
+			$allele_map{$new_allele1}{names}=$new_name1;
+			$allele_map{$new_allele2}{names}=$new_name2;
+			$allele_map{$new_allele1}{comment}=$rcomment1;
+			$allele_map{$new_allele2}{comment}=$rcomment2;
+			$allele_pairs{$pair}{allele1}=$new_allele1;	
+			$allele_pairs{$pair}{allele2}=$new_allele2;
+			$allele_pairs{$pair}{comment1}=$rcomment1;
+			$allele_pairs{$pair}{comment2}=$rcomment2;
+			$allele_pairs{$pair}{cor}=$cor;	
+			$allele_pairs{$pair}{propReads}=$propReads;	
+			$allele_pairs{$pair}{propSignal}=$propSignal;	
+			$allele_pairs{$pair}{error}=(1-$propSignal)+(1-$propReads)+(1-$cor);
+			$candidates .= ",$new_allele1|$new_allele2";
+			push @finalists, "novel";	
+			
+			##Re-run pair picker with new allele pair
+			($pp_results_ref,$pp_candidates_ref, $pp_unique_counts) = PairPicker->runModule("$opts{fastq_dir}/$fq_prefix", $new_reference,$candidates, $opts{gene}, $opts{minQuality}, $opts{pp_scale}, $opts{scripts_dir}, 0);
+			$sums_ref = sumMatrix($pp_results_ref,\@finalists,($read_cnt*2)/10000);
+			%matrix_sums = %{$sums_ref};
+			
+			$power = $opts{PairPickerPower};
+			if($pp_unique_counts < 10){
+				$power = 0;	
+			}elsif($pp_unique_counts < 100){
+				$power = (($pp_unique_counts-10)/90)*$power;
+			}	
+
+			%final_scores = ();
+			foreach my $pair (keys %matrix_sums){
+				$allele_pairs{$pair}{error} = .000001 if ($allele_pairs{$pair}{error}==0);
+				$allele_pairs{$pair}{pp_score} = ($matrix_sums{$pair}{row}/$matrix_sums{$pair}{col})**$power;
+				if($power == 0){
+					$allele_pairs{$pair}{pp_score} = 1;
+				}
+				$matrix_sums{$pair}{col}=1 if ($matrix_sums{$pair}{col}==0);
+				$final_scores{$pair} = $allele_pairs{$pair}{pp_score}/$allele_pairs{$pair}{error};		
+			}		
+		}elsif($allele_ref->{$original_allele1}{replace}==1 ||$allele_ref->{$original_allele2}{replace}==1){
+			$allele_map{$original_allele1}{names}=$new_name1;
+			$allele_map{$original_allele2}{names}=$new_name2;
+			$allele_pairs{$pair}{comment1}.="$rcomment1";
+			$allele_pairs{$pair}{comment2}.="$rcomment2";
+			$allele_pairs{$pair}{allele1}=$new_allele1;
+			$allele_pairs{$pair}{allele2}=$new_allele2;
+		}
 	}
 
-	sub createProfileAndCalculateSignal{
-		my $gene = shift;
-		$gene = shift if ($gene eq "HLAPredict");
-		my $allele1 = shift;
-		my $allele2 = shift;
-		my $name1 = shift;
-		my $name2 = shift;
-		my $replace1 = shift;
-		my $replace2 = shift;
-		my $seq1 = shift;
-		my $seq2 = shift;
-		my $total_cnts = shift;
-		my $offset = shift;
-		my $sig = shift;
-		my $kmer_keys = shift;
-		my $sig_kmers = shift;
-		my $allele_cnts = shift; 
-		my $reference = shift;
+	@topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
 
-		load "$opts{scripts_dir}/modules/SimulateReads.pm";
-		load "$opts{scripts_dir}/modules/RunKraken.pm";
-		load "$opts{scripts_dir}/modules/ReadCounter.pm";
-		my $rlogfile = "$opts{out_dir}/$gene.refinement.log";
-		my $rlog;
-		open($rlog, ">>$rlogfile");
-		if(! (-e "$opts{out_dir}/refinement_files" && -d "$opts{out_dir}/refinement_files")){
-			print $rlog "Making refinement directory (mkdir $opts{out_dir}/refinement_files)...";
-			if(! mkdir "$opts{out_dir}/refinement_files"){
-				print $rlog "Fatal Error: Error creating directory $opts{out_dir}/refinement_files\n";
-				exit 1;
-			}else{
-				print $rlog "DONE\n";
-			}
+	##When the proportion of signal is low, there is an enrichment of cases where the rare allele just edges out the correct common allele. In these cases more weight is given to the common allele
+	if($allele_pairs{$topPairs[0]}{propSignal}<.98 && ($final_scores{$topPairs[0]} - $final_scores{$topPairs[1]})<0.5){
+		foreach my $pair (@topPairs){
+			my $common = 0;
+			my $cwd1 = $allele_map{$allele_pairs{$pair}{allele1}}{cwd} || 0;
+			my $cwd2 = $allele_map{$allele_pairs{$pair}{allele2}}{cwd} || 0;
+			$common++ if ($cwd1 ==1);
+			$common++ if ($cwd2 ==1);
+			my $boost = $final_scores{$pair} * (0.03*$common);
+			$final_scores{$pair}+=$boost;
 		}
-		if(! (-e "$opts{out_dir}/refinement_files/simulated" && -d "$opts{out_dir}/refinement_files/simulated")){
-			print $rlog "Making refinement simulation directory (mkdir $opts{out_dir}/refinement_files/simulated)...";
-			if(! mkdir "$opts{out_dir}/refinement_files/simulated"){
-				print $rlog "Fatal Error: Error creating directory $opts{out_dir}/refinement_files/simulated\n";
-				exit 1;
-			}else{
-				print $rlog "DONE\n";
-			}
-		}
-							
-		open(OUT,">$opts{out_dir}/refinement_files/refined_reference.$gene.fa"); 	
-		$opts{kraken_db} =~ s/\/$//;
-		my $database_name = $opts{kraken_db};
-		$database_name =~ s/.*\///;
-		$opts{kraken_db} =~ m/(.*)\/.+$/;
-		my $database_dir = $1;
-
-		##Set simulation options 
-		SimulateReads->setSimulationOptions("$opts{out_dir}/refinement_files/refined_alleles.fa", $opts{sim_num_reads}, $opts{sim_read_length},$opts{sim_max_insert}, $opts{sim_scale}, $opts{sim_shape}, $opts{sim_seed}, $opts{threads},$opts{scripts_dir},"simulated");
-		
-		if($replace1 == 1){
-			print OUT ">$allele1 $name1\n$seq1\n";
-			##Simulate reads from the new allele
-			SimulateReads->makeSim($allele1, $seq1, "$opts{out_dir}/refinement_files/simulated/simulated");
-			
-			##Filter reads with kraken
-			RunKraken->filterReads($database_dir, $database_name, "$opts{out_dir}/refinement_files/simulated/simulated.$allele1",$opts{threads}, "$opts{out_dir}/refinement_files/simulated/simulated.${allele1}_1.fastq","$opts{out_dir}/refinement_files/simulated/simulated.${allele1}_2.fastq",$opts{kraken_path},"", $rlogfile);
-			
-			##Count reads
-			ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.uniq.cnts",$rlogfile); 
-			ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.uniq.cnts",$rlogfile); 
-			
-			##Add reads to the profile
-			##Putting read 2 first to make order of read in determineProfile
-			addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.uniq.cnts",$allele1,1,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
-			addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.uniq.cnts",$allele1,0,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
-		}
-		
-		if($replace2 == 1){
-			print OUT ">$allele2 $name2\n$seq2\n";			
-			##Simulate reads from the new allele
-			SimulateReads->makeSim($allele2, $seq2, "$opts{out_dir}/refinement_files/simulated/simulated");
-			
-			##Filter reads with kraken
-			RunKraken->filterReads($database_dir, $database_name, "$opts{out_dir}/refinement_files/simulated/simulated.$allele2",$opts{threads}, "$opts{out_dir}/refinement_files/simulated/simulated.${allele2}_1.fastq","$opts{out_dir}/refinement_files/simulated/simulated.${allele2}_2.fastq",$opts{kraken_path},"", $rlogfile);
-			
-			##Count reads
-			ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.uniq.cnts",$rlogfile); 
-			ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.uniq.cnts",$rlogfile); 
-			
-			##Add reads to the profile
-			##Putting read 2 first to make order of read in determineProfile
-			addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.uniq.cnts",$allele2,1,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
-			addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.uniq.cnts",$allele2,0,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
-		
-		}
-
-		if(open(IN, $reference)){
-			while(<IN>){
-				print OUT $_;
-			}
-			close(IN);
-		}
-			
-		close(OUT);
-		##Calculate the correlation, proportion of reads, proportion of signal for the new allele pair
-		my ($cor, $propReads, $propSignal) = getSSE($allele1, $allele2, $total_cnts, ($allele_cnts->{$allele1} + $allele_cnts->{$allele2}), $offset, $sig);
-		return ($cor, $propReads, $propSignal,"$opts{out_dir}/refinement_files/refined_reference.${gene}.fa");
+		@topPairs = sort {$final_scores{$b}<=>$final_scores{$a}} keys %final_scores;
 	}
 
-	sub addReadsToProfile{
-		my $file = shift;
-		$file = shift if ($file eq "HLAPredict");
-		my $allele = shift;
-		my $revcomp = shift;
-		my $sig_kmers = shift;
-		my $kmer_keys = shift;
-		my $combined_kmers = shift;
-		my $sig = shift;
-		my $allele_cnts = shift;
-		
-		my $kmer_cnt = scalar keys %{$sig_kmers};
-		open(IN, $file);
-		while(<IN>){
-			chomp;
-			my @parts = split /\t/, $_;
-			my $key = "";
-			$parts[0] = SequenceFunctions->revcomp($parts[0]) if ($revcomp == 1);
-			if(defined $sig_kmers->{$parts[0]}){
-			$key = $sig_kmers->{$parts[0]};
+	foreach my $pair (@topPairs){
+		if($final_scores{$pair} >= $max_score){
+			$max_score = $final_scores{$pair};
+			$answers{$pair}{allele1}=$allele_map{$allele_pairs{$pair}{allele1}}||$allele_pairs{$pair}{allele1};
+			$answers{$pair}{allele2}=$allele_map{$allele_pairs{$pair}{allele2}}||$allele_pairs{$pair}{allele2};
+			$answers{$pair}{propSig}=$allele_pairs{$pair}{propSignal};
+			$answers{$pair}{propReads}=$allele_pairs{$pair}{propReads};
+			$answers{$pair}{cor}=$allele_pairs{$pair}{cor};
+			$answers{$pair}{error}=$allele_pairs{$pair}{error};
+			$answers{$pair}{pp_score}=$allele_pairs{$pair}{pp_score};
+			$answers{$pair}{final_score}=$final_scores{$pair};
+			my $comment1 = $allele_pairs{$pair}{comment1} || "";
+			my $comment2 = $allele_pairs{$pair}{comment2} || "";
+			$answer .= "$allele_pairs{$pair}{allele1}\t$allele_pairs{$pair}{allele2}\t$answers{$pair}{allele1}{names}\t$answers{$pair}{allele2}{names}\t$answers{$pair}{propReads}\t$answers{$pair}{propSig}\t$answers{$pair}{cor}\t$answers{$pair}{error}\t$answers{$pair}{pp_score}\t$answers{$pair}{final_score}\t$comment1\t$comment2\n";
+			$answer_cnt++;	
 		}else{
-			$key = $kmer_cnt;
-			$kmer_keys->{$key}=$parts[0];
-			$sig_kmers->{$parts[0]}=$key;
-			$combined_kmers->{$parts[0]}=$key;
-			$kmer_cnt++;
-		}
-		$sig->{$allele}{$key}+=$parts[1];
-		$allele_cnts->{$allele}+=$parts[1];
+			last;	
+		}	
 	}
-	close(IN);	
+	if($answer eq "" || $max_score == 0){
+		$answer = "HLA\tHLA\t$opts{gene}\t$opts{gene}\t-\t-\t-\t-\t-\t-\tNo call made\t\n";
+	}
+	return($answer);
+}
+
+sub createProfileAndCalculateSignal{
+	my $gene = shift;
+	$gene = shift if ($gene eq "HLAPredict");
+	my $allele1 = shift;
+	my $allele2 = shift;
+	my $name1 = shift;
+	my $name2 = shift;
+	my $replace1 = shift;
+	my $replace2 = shift;
+	my $seq1 = shift;
+	my $seq2 = shift;
+	my $total_cnts = shift;
+	my $offset = shift;
+	my $sig = shift;
+	my $kmer_keys = shift;
+	my $sig_kmers = shift;
+	my $allele_cnts = shift; 
+	my $reference = shift;
+
+	load "$opts{scripts_dir}/modules/SimulateReads.pm";
+	load "$opts{scripts_dir}/modules/RunKraken.pm";
+	load "$opts{scripts_dir}/modules/ReadCounter.pm";
+	my $rlogfile = "$opts{out_dir}/$gene.refinement.log";
+	my $rlog;
+	open($rlog, ">>$rlogfile");
+	if(! (-e "$opts{out_dir}/refinement_files" && -d "$opts{out_dir}/refinement_files")){
+		print $rlog "Making refinement directory (mkdir $opts{out_dir}/refinement_files)...";
+		if(! mkdir "$opts{out_dir}/refinement_files"){
+			print $rlog "Fatal Error: Error creating directory $opts{out_dir}/refinement_files\n";
+			exit 1;
+		}else{
+			print $rlog "DONE\n";
+		}
+	}
+	if(! (-e "$opts{out_dir}/refinement_files/simulated" && -d "$opts{out_dir}/refinement_files/simulated")){
+		print $rlog "Making refinement simulation directory (mkdir $opts{out_dir}/refinement_files/simulated)...";
+		if(! mkdir "$opts{out_dir}/refinement_files/simulated"){
+			print $rlog "Fatal Error: Error creating directory $opts{out_dir}/refinement_files/simulated\n";
+			exit 1;
+		}else{
+			print $rlog "DONE\n";
+		}
+	}
+						
+	open(OUT,">$opts{out_dir}/refinement_files/refined_reference.$gene.fa"); 	
+	$opts{kraken_db} =~ s/\/$//;
+	my $database_name = $opts{kraken_db};
+	$database_name =~ s/.*\///;
+	$opts{kraken_db} =~ m/(.*)\/.+$/;
+	my $database_dir = $1;
+
+	##Set simulation options 
+	SimulateReads->setSimulationOptions("$opts{out_dir}/refinement_files/refined_alleles.fa", $opts{sim_num_reads}, $opts{sim_read_length},$opts{sim_max_insert}, $opts{sim_scale}, $opts{sim_shape}, $opts{sim_seed}, $opts{threads},$opts{scripts_dir},"simulated");
+	
+	if($replace1 == 1){
+		print OUT ">$allele1 $name1\n$seq1\n";
+		##Simulate reads from the new allele
+		SimulateReads->makeSim($allele1, $seq1, "$opts{out_dir}/refinement_files/simulated/simulated");
+		
+		##Filter reads with kraken
+		RunKraken->filterReads($database_dir, $database_name, "$opts{out_dir}/refinement_files/simulated/simulated.$allele1",$opts{threads}, "$opts{out_dir}/refinement_files/simulated/simulated.${allele1}_1.fastq","$opts{out_dir}/refinement_files/simulated/simulated.${allele1}_2.fastq",$opts{kraken_path},"", $rlogfile);
+		
+		##Count reads
+		ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.uniq.cnts",$rlogfile); 
+		ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.uniq.cnts",$rlogfile); 
+		
+		##Add reads to the profile
+		##Putting read 2 first to make order of read in determineProfile
+		addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_1.uniq.cnts",$allele1,1,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
+		addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele1.${gene}_2.uniq.cnts",$allele1,0,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
+	}
+	
+	if($replace2 == 1){
+		print OUT ">$allele2 $name2\n$seq2\n";			
+		##Simulate reads from the new allele
+		SimulateReads->makeSim($allele2, $seq2, "$opts{out_dir}/refinement_files/simulated/simulated");
+		
+		##Filter reads with kraken
+		RunKraken->filterReads($database_dir, $database_name, "$opts{out_dir}/refinement_files/simulated/simulated.$allele2",$opts{threads}, "$opts{out_dir}/refinement_files/simulated/simulated.${allele2}_1.fastq","$opts{out_dir}/refinement_files/simulated/simulated.${allele2}_2.fastq",$opts{kraken_path},"", $rlogfile);
+		
+		##Count reads
+		ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.uniq.cnts",$rlogfile); 
+		ReadCounter->count_reads("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.fq","$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.uniq.cnts",$rlogfile); 
+		
+		##Add reads to the profile
+		##Putting read 2 first to make order of read in determineProfile
+		addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_1.uniq.cnts",$allele2,1,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
+		addReadsToProfile("$opts{out_dir}/refinement_files/simulated/simulated.$allele2.${gene}_2.uniq.cnts",$allele2,0,$sig_kmers,$kmer_keys,\%combined_kmers,$sig,$allele_cnts);
+	
+	}
+
+	if(open(IN, $reference)){
+		while(<IN>){
+			print OUT $_;
+		}
+		close(IN);
+	}
+		
+	close(OUT);
+	##Calculate the correlation, proportion of reads, proportion of signal for the new allele pair
+	my ($cor, $propReads, $propSignal) = getSSE($allele1, $allele2, $total_cnts, ($allele_cnts->{$allele1} + $allele_cnts->{$allele2}), $offset, $sig);
+	return ($cor, $propReads, $propSignal,"$opts{out_dir}/refinement_files/refined_reference.${gene}.fa");
+}
+
+sub addReadsToProfile{
+	my $file = shift;
+	$file = shift if ($file eq "HLAPredict");
+	my $allele = shift;
+	my $revcomp = shift;
+	my $sig_kmers = shift;
+	my $kmer_keys = shift;
+	my $combined_kmers = shift;
+	my $sig = shift;
+	my $allele_cnts = shift;
+	
+	my $kmer_cnt = scalar keys %{$sig_kmers};
+	open(IN, $file);
+	while(<IN>){
+		chomp;
+		my @parts = split /\t/, $_;
+		my $key = "";
+		$parts[0] = SequenceFunctions->revcomp($parts[0]) if ($revcomp == 1);
+		if(defined $sig_kmers->{$parts[0]}){
+		$key = $sig_kmers->{$parts[0]};
+	}else{
+		$key = $kmer_cnt;
+		$kmer_keys->{$key}=$parts[0];
+		$sig_kmers->{$parts[0]}=$key;
+		$combined_kmers->{$parts[0]}=$key;
+		$kmer_cnt++;
+	}
+	$sig->{$allele}{$key}+=$parts[1];
+	$allele_cnts->{$allele}+=$parts[1];
+}
+close(IN);	
 }
 
 sub sumMatrix{

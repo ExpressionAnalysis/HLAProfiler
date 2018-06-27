@@ -12,7 +12,7 @@ use File::Copy;
 
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "14 Jul 2017";
+my $last_updated = "13 Sep 2017";
 
 my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "\nDESCRIPTION\n" .
@@ -150,7 +150,7 @@ if($module eq "test_modules"){
 	    		"\n";
 			  
 	my %build_opts = (transcripts=>"", transcript_gtf=>"", reference=>"", output_dir=>".",cwd=>"", database_name=>"hla", num_reads=>500000,read_length=>50,exclusion_bed=>"", threads=>1, filter_reads=>1,k_mer=>31, minimizer=>13, kraken_path=>$kraken_path, max_insert=>1000, seed=>1234, scale=>80, shape=>0.7);
-	GetOptions(\%build_opts, qw(reference|r=s transcript_gtf|g=s exclusion_bed|e=s output_dir|o=s cwd=s database_name|db=s num_reads|nr=s intermediate_files|if read_length|l=s transcripts|t=s threads|c=s filter_reads|f=s help|h minimizer|m=s k_mer|k=s kraken_path|kp=s max_insert|mi=s scale|sc=s shape|sh=s seed|sd=s));
+	GetOptions(\%build_opts, qw(reference|r:s transcript_gtf|g:s exclusion_bed|e:s output_dir|o:s cwd:s database_name|db:s num_reads|nr:i intermediate_files|if read_length|l:i transcripts|t:s threads|c:i filter_reads|f:s help|h minimizer|m:i k_mer|k:i kraken_path|kp:s max_insert|mi:i scale|sc:s shape|sh:s seed|sd:s));
 	if($build_opts{help}){
 		print "$build_usage\n";
 		exit;
@@ -191,8 +191,8 @@ if($module eq "test_modules"){
 			"\nUSAGE:\n" .
 			"perl $SCRIPT_NAME predict <options>\n" .
 			"\nRequired Options:\n" .
-			"-fastq1|fq1\t\tlocation of read1 fastq (required)\n" .
-			"-fastq2|fq2\t\tlocation of read2 fastq (required)\n" .
+			"-fastq1|fq1\t\tlocation of uncompressed or gzipped read1 fastq (required)\n" .
+			"-fastq2|fq2\t\tlocation of uncompressed or gzipped read2 fastq (required)\n" .
 			"-database_name|db\tname of HLA database (required)\n" .
 			"-directory_dir|dd\tname of parent directory of database (required)\n" .
 			"-reference|r\treference fa used to create the database (required)\n" .
@@ -226,7 +226,7 @@ if($module eq "test_modules"){
 	    		"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
 	    		"\n";
 	my %predict_opts=(kraken_path=>$kraken_path,database_dir=>"", fastq1=>"", fastq2=>"",database_name=>"",output_dir=>".", threads=>1, log=>"", allele_refinement=>"all", num_reads=>500000,read_length=>50, max_insert=>1000, seed=>1234, scale=>80, shape=>0.7, minimum_reads=>100);
-	GetOptions(\%predict_opts, qw(allele_refinement|ar=s intermediate_files|if fastq1|fq1=s fastq2|fq2=s threads|c=s reference|r=s database_name|db=s database_dir|dd=s num_reads|nr=s read_length|rl=s max_insert|m=s scale|sc=s shape|sh=s seed|sd=s output_dir|od=s kraken_path|kp=s log|l=s threads|c=s help|h minimum_reads|min=s));
+	GetOptions(\%predict_opts, qw(allele_refinement|ar:s intermediate_files|if fastq1|fq1:s fastq2|fq2:s threads|c:i reference|r:s database_name|db:s database_dir|dd:s num_reads|nr:i read_length|rl:i max_insert|m:i scale|sc:s shape|sh:s seed|sd:s output_dir|od:s kraken_path|kp:s log|l:s threads|c:i help|h minimum_reads|min:i));
 	if($predict_opts{help}){
 		print "$predict_usage\n";
 		exit;
@@ -273,7 +273,7 @@ if($module eq "test_modules"){
 			"\n";
 			
 	my %create_opts=(output_dir=>".", reference=>"", cwd=>"");
-	GetOptions(\%create_opts, qw(output_dir|od=s reference|r=s cwd=s help|h log|l));
+	GetOptions(\%create_opts, qw(output_dir|od:s reference|r:s cwd:s help|h log|l));
 	if($create_opts{help}){
 		print "$create_usage\n";
 		exit;
@@ -285,8 +285,8 @@ if($module eq "test_modules"){
 		exit; 
 	}else{
 		my $logfile = "$create_opts{output_dir}/HLAProfiler.build.log";
-		open (my $log, ">$logfile}");	
-		open(my $commands, ">$create_opts{output_dir}/HLAProfiler.build.commands.txt");
+		open (my $log, ">","$logfile");	
+		open(my $commands, ">", "$create_opts{output_dir}/HLAProfiler.build.commands.txt");
 		my $reference = mergeDuplicateAlleles($create_opts{reference}, $create_opts{output_dir},$create_opts{cwd}, $log, $commands, $logfile);
 		createHLATaxonomy($reference,"$create_opts{output_dir}",$log, $commands, $logfile);
 	}
@@ -320,7 +320,7 @@ if($module eq "test_modules"){
 			"\n"; 
 	
 	my %build_opts = (exclusion_bed=>"", transcripts=>"",transcript_gtf=>"", reference=>"", output_dir=>".",log=>"", database_name=>"hla", threads=>1, k_mer=>31, minimizer=>13, kraken_path=>$kraken_path);
-	GetOptions(\%build_opts, qw(reference|r=s transcript_gtf|g=s exclusion_bed|e=s output_dir|o=s database_name|db=s transcripts|t=s threads|c=s help|h minimizer|m=s k_mer|k=s kraken_path|kp=s));
+	GetOptions(\%build_opts, qw(reference|r:s transcript_gtf|g:s exclusion_bed|e:s output_dir|o:s database_name|db:s transcripts|t:s threads|c:i help|h minimizer|m:i k_mer|k:i kraken_path|kp:s));
 	if($build_opts{help}){
 		print "$build_usage\n";
 		exit;
@@ -376,8 +376,8 @@ if($module eq "test_modules"){
 			}
 		}
 		my $logfile = "$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.log";
-		open (my $log, ">$logfile}");	
-		open(my $commands, ">$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
+		open (my $log, ">", "$logfile");	
+		open(my $commands, ">", "$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
 		print $commands "$mkdir_cmds";
 		buildHLADatabase($build_opts{reference},$build_opts{transcripts},$build_opts{transcript_gtf},$build_opts{exclusion_bed},$build_opts{output_dir},$build_opts{database_name},$build_opts{k_mer},$build_opts{minimizer},$build_opts{threads},$build_opts{kraken_path}, $log,$commands);
 }
@@ -402,7 +402,7 @@ if($module eq "test_modules"){
 			"-max_insert|mi\t\tmaximum size of insert (default:1000)\n" .
 			"-scale|sc\t\tscale of pareto distribution to determine insert size (default:80)\n" .
 			"-shape|sh\t\tshape of pareto distribution to determine insert size (default:0.7)\n" .
-			"-seed\t\t\tseed of random number generator for simulation (default:1234)\n" .
+			"-seed|sd\t\t\tseed of random number generator for simulation (default:1234)\n" .
 			"\nGeneral options:\n" .
 			"-threads|c\t\tnumber of threads to uses for processing.(default:1)\n" .
 			"-help|h\t\t\tprints this help prompt\n" .
@@ -414,7 +414,7 @@ if($module eq "test_modules"){
 	    		"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
 			"\n";  
 	my %build_opts = (reference=>"", output_dir=>".", database_dir=>".", database_name=>"hla", num_reads=>500000,read_length=>50, threads=>1, filter_reads=>1,k_mer=>31, minimizer=>13, kraken_path=>$kraken_path, max_insert=>1000, seed=>1234, scale=>80, shape=>0.7);
-	GetOptions(\%build_opts, qw(intermediate_files|if reference|r=s output_dir|o=s database_name|db=s num_reads|nr=s read_length|l=s threads|c=s filter_reads|f=s help|h k_mer|k=s kraken_path|kp=s seed|sd=s scale|sc=s shape|sh=s max_insert|mi=s));
+	GetOptions(\%build_opts, qw(intermediate_files|if reference|r:s output_dir|o:s database_name|db:s num_reads|nr:i read_length|l:i threads|c:i filter_reads|f:s help|h k_mer|k:i kraken_path|kp:s seed|sd:s scale|sc:s shape|sh:s max_insert|mi:i));
 	if($build_opts{help}){
 		print "$build_usage\n";
 		exit;
@@ -434,8 +434,9 @@ if($module eq "test_modules"){
 			}
 		}
 		my $logfile = "$build_opts{output_dir}/logs/HLAProfiler.build.log";
-		open (my $log, ">$logfile}");	
-		open(my $commands, ">$build_opts{output_dir}/logs/HLAProfiler.build.commands.txt");
+		open (my $log, ">", "$logfile");	
+		open(my $commands, ">", "$build_opts{output_dir}/logs/HLAProfiler.build.commands.txt");
+		#Print the make directory commands to the command files
 		print $commands "$mkdir_cmds";
 		createKmerProfiles($build_opts{reference},$build_opts{database_dir},$build_opts{database_name},$build_opts{output_dir},$build_opts{num_reads},$build_opts{read_length},$build_opts{filter_reads}, $build_opts{threads}, $build_opts{kraken_path}, $build_opts{intermediate_files},$build_opts{max_insert}, $build_opts{scale}, $build_opts{shape}, $build_opts{seed}, $log, $commands);
 	}
@@ -464,7 +465,7 @@ if($module eq "test_modules"){
 	    		"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
 			"\n";  
 	my %filter_opts = (database_dir=>"", output_dir=>"", database_name=>"hla", threads=>1, kraken_path=>$kraken_path, fastq1=>"", fastq2=>"");
-	GetOptions(\%filter_opts, qw(database_dir|dd=s output_dir|od=s database_name|db=s threads|c=s fastq1|fq1=s fastq2|fq2=s kraken_path|kp=s help|h));
+	GetOptions(\%filter_opts, qw(database_dir|dd:s output_dir|od:s database_name|db:s threads|c:i fastq1|fq1:s fastq2|fq2:s kraken_path|kp:s help|h));
 	if($filter_opts{help}){
 		print "$filter_usage\n";
 		exit;
@@ -484,7 +485,7 @@ if($module eq "test_modules"){
 			"\nUSAGE:\n" .
 			"perl $SCRIPT_NAME count_reads <options>\n" .
 			"\nRequired Options:\n" .
-			"-reads_directory\tlocation of directory containing filtered read fastqs. Please make sure to filter files using HLAProfiler.pl filter before counting (required)\n" .
+			"-reads_directory|rd\tlocation of directory containing filtered read fastqs. Please make sure to filter files using HLAProfiler.pl filter before counting (required)\n" .
 			"-sample_name|sn\t\tname of the sample. This must perfect match the prefix of each of the read count files. i.e. The sample name for file NA12878.200.B_1.uniq.cnt would be NA12878.200 (required)\n" .
 			"-output_directory|od\tlocation of directory containing filtered read fastqs. Please make sure to filter files using HLAProfiler.pl filter before counting (default:-reads_directory)\n" .
 			"\nGeneral options:\n" .
@@ -498,7 +499,7 @@ if($module eq "test_modules"){
 			"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
 			"\n";  
 	my %count_opts = (threads=>1, reads_directory=>"", output_directory=>"",sample_name=>"");
-	GetOptions(\%count_opts, qw(reads_directory|rd=s output_directory|od=s sample_name|sn=s threads|c=s help|h));
+	GetOptions(\%count_opts, qw(reads_directory|rd:s output_directory|od:s sample_name|sn:s threads|c:i help|h));
 
 	if($count_opts{help}){
 		print "$count_usage\n";
@@ -521,7 +522,7 @@ if($module eq "test_modules"){
 			"perl $SCRIPT_NAME predict <options>\n" .
 			"\nRequired Options:\n" .
 			"-counts_directory|cd\t\tlocation of directory containing filtered and paired read counts files. To generate these files from fastq files please run HLAProfiler.pl filter followed by HLAProfiler.pl count_reads (required)\n" .
-			"-reads_directory|cd\t\tlocation of directory containing filtered and paired read fastqs.(required)\n" .
+			"-reads_directory|rd\t\tlocation of directory containing filtered and paired read fastqs.(required)\n" .
 			"-profile_directory|sdir\t\tpath to directory containing the profile files (required)\n" .
 			"-sample_name|sn\t\t\tname of the sample. This must perfect match the prefix of each of the read count files. i.e. The sample name for file NA12878.200.B_1.uniq.cnt would be NA12878.200 (required)\n" .
 			"-reference|r\t\t\tHLA reference fasta. There must also be an allele map file in the sample directory as the reference fa. (required)\n" .
@@ -547,7 +548,7 @@ if($module eq "test_modules"){
 			"\nCopyright. Q2 Solutions|EA Genomics. 2016\n" .
 			"\n";  
 	my %predict_opts=(allele_refinement=>"none",profile_directory=>"",kraken_db=>".",kraken_path=>".",counts_directory=>"",reads_directory=>"", threads=>1, reference=>"", sample_name=>"", output_dir=>".", threads=>1, num_reads=>500000,read_length=>50, max_insert=>1000, seed=>1234, scale=>80, shape=>0.7, minimum_reads=>100);
-	GetOptions(\%predict_opts, qw(allele_refinement|ar=s kraken_db|db kraken_path|kp profile_directory|sdir=s counts_directory|cd=s reads_directory|rd=s sample_name|sn=s reference|r=s output_dir|od=s threads|c=s help|h minimum_reads|min=s));
+	GetOptions(\%predict_opts, qw(allele_refinement|ar:s kraken_db|db kraken_path|kp profile_directory|sdir:s counts_directory|cd:s reads_directory|rd:s sample_name|sn:s reference|r:s output_dir|od:s threads|c:i help|h minimum_reads|min:i));
 	if($predict_opts{help}){
 		print "$predict_usage\n";
 		exit;
@@ -573,7 +574,7 @@ if($module eq "test_modules"){
 				exit;
 			}
 			my $out;
-			open ($out, ">$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
+			open ($out, ">","$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
 			my %simOpts=(num_reads=>$predict_opts{num_reads},read_length=>$predict_opts{read_length},max_insert=>$predict_opts{max_insert},scale=>$predict_opts{scale},shape=>$predict_opts{shape},seed=>$predict_opts{seed});
 			my $answers_ref = predictHLAType($predict_opts{profile_directory},$predict_opts{reads_directory},$predict_opts{counts_directory},$predict_opts{sample_name},$predict_opts{reference},$allele_map,$predict_opts{threads},$predict_opts{allele_refinement},\%simOpts,$predict_opts{output_dir},$predict_opts{kraken_db},$predict_opts{kraken_path},"$predict_opts{output_dir}/$predict_opts{sample_name}",$predict_opts{minimum_reads});
 			my %answers=%{$answers_ref};
@@ -593,6 +594,7 @@ sub run_build{
 	my %opts = %{$ref};
 	my $mkdir_cmds = "";
 	#Set-up database directory structure
+        #This block of code executes each mkdir command and if the command is successful stores the command to be logged later
 	if(! (-e "$opts{output_dir}/$opts{database_name}" && -d "$opts{output_dir}/$opts{database_name}")){
 		if(! mkdir "$opts{output_dir}/$opts{database_name}"){
 			print STDERR "Fatal Error: Error creating directory $opts{output_dir}/$opts{database_name}\n";
@@ -627,8 +629,12 @@ sub run_build{
 	}
 
 	my $logfile = "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.log";
-	open($log, ">$logfile");
-	open(my $commands, ">$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
+	open($log, ">","$logfile");
+
+	#This opens the files where all executed commands (or subroutine call equivalent commands) are stored
+	open(my $commands, ">", "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
+
+	#Print the make directory commands to the command files
 	print $commands "$mkdir_cmds\n";
 
 	my $merge_dir = "$opts{output_dir}/$opts{database_name}/data/reference";
@@ -719,7 +725,7 @@ sub run_predict{
 	my $out;
 	
 	##Prints output
-	open ($out, ">$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
+	open ($out, ">","$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
 	print $out "Allele1_Accession\tAllele2_Accession\tAllele1\tAllele2\tProportion_reads\tProportion_signal\tCorrelation\tError\tPair_score\tFinal_score\tAllele1 Comments\tAllele2 Comments\n";
 	for my $answer (sort keys %answers){
 		print $out "$answers{$answer}";
@@ -827,7 +833,7 @@ sub buildHLADatabase{
 	if(! -X "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp"){
 		print $commands "echo \" \" >$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp\n";
 		print $log "Touching $output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp...";
-		open(GI, ">$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
+		open(GI, ">", "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
 		print GI " ";
 		close(GI);
 		print $log "DONE\n";
@@ -936,8 +942,8 @@ sub createKmerProfiles{
 	my $commands_file = "$output_dir/logs/HLAProfiler.build.profile.commands.txt";	
 	my $slog;
 	my $scommands;	
-	open($slog, ">$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
-	open($scommands, ">$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
+	open($slog, ">", "$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
+	open($scommands, ">", "$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
 	
 
 	print $log "Creating K-mer profiles. Profile specific commands are captured in $output_dir/logs/HLAProfiler.build.profile.commands.txt and logged in $output_dir/logs/HLAProfiler.build.profile.log\n";
@@ -950,6 +956,7 @@ sub createKmerProfiles{
 	print $log "Setting simulation parameters...";
 	print $slog "Setting simulation parameters...";
 	SimulateReads->setSimulationOptions($reference, $num_reads, $read_length,$max_insert, $scale, $shape, $seed, $threads, $SCRIPTS_DIR);
+	SimulateReads->loadSequenceFunctions();
 	print $log "DONE\n";	
 	print $slog "DONE\n";	
 
@@ -1065,7 +1072,7 @@ sub simulateAndProcessAllele{
 
 
 	my $logfile = "$output_dir/logs/profile/$gene/$acc.profile.log";
-	open(my $log, ">$logfile");	
+	open(my $log, ">", "$logfile");	
 
 	#Directory structure set-up
 	if(!(-e "$output_dir/simulated/$gene" && -d "$output_dir/simulated/$gene")){

@@ -7,7 +7,7 @@ use Getopt::Long;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 May 2016";
-my $last_updated = "11 Jan 2017";
+my $last_updated = "18 Jan 2018";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .
@@ -30,7 +30,7 @@ my $usage="\n$SCRIPT_NAME v$version\n".
 
 sub runCommandline{
 	my %opts = (fasta=>"", output_dir=>".", log=>"");
-	GetOptions(\%opts, qw(help|h reference_fasta|r=s output_dir|o=s log|l=s));
+	GetOptions(\%opts, qw(help|h reference_fasta|r:s output_dir|o:s log|l:s));
 	if($opts{help}){
 		print $usage;
 		exit;
@@ -215,7 +215,7 @@ sub createHLATaxonomy{
 	
 	foreach my $class (sort {$a cmp $b} keys %tree){
 		my %phash = %{$tree{$class}};
-		foreach my $protein (sort keys %phash){
+		foreach my $protein (sort {$a cmp $b} keys %phash){
 			if(ref($phash{$protein}) eq "HASH"){ 
 				print NAMES  "$taxonomy_start\t|\t$protein\t|\tHLA:Protein $protein\t|\tscientific name\n";
 				print NODES  "$taxonomy_start\t|\t$nodes{$class}\t|\tkingdom\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n";
@@ -224,7 +224,7 @@ sub createHLATaxonomy{
 				$taxonomy_start++;
 				
 				my %d1hash = %{$phash{$protein}};
-				foreach my $d1 (sort keys %d1hash){
+				foreach my $d1 (sort {$a cmp $b} keys %d1hash){
 					if(ref($d1hash{$d1}) eq "HASH"){
 						print NAMES  "$taxonomy_start\t|\t$protein:$d1\t|\tHLA:Protein $protein:$d1\t|\tscientific name\n";
 						print NODES  "$taxonomy_start\t|\t$ptax\t|\tphylum\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n";
@@ -232,7 +232,7 @@ sub createHLATaxonomy{
 						my $d1tax = $taxonomy_start;
 						$taxonomy_start++;
 						my %d2hash = %{$d1hash{$d1}};
-						foreach my $d2 (sort keys %d2hash){
+						foreach my $d2 (sort {$a cmp $b} keys %d2hash){
 							if(ref($d2hash{$d2}) eq "HASH"){
 								print NAMES  "$taxonomy_start\t|\t$protein:$d1:$d2\t|\tHLA:Protein $protein:$d1:$d2\t|\tscientific name\n";
 								print NODES  "$taxonomy_start\t|\t$d1tax\t|\tfamily\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n";
@@ -241,7 +241,7 @@ sub createHLATaxonomy{
 								$taxonomy_start++;
 								
 								my %d3hash = %{$d2hash{$d2}};
-								foreach my $d3 (sort keys %d3hash){
+								foreach my $d3 (sort {$a cmp $b} keys %d3hash){
 									if(ref($d3hash{$d3}) eq "HASH"){
 										print NAMES  "$taxonomy_start\t|\t$protein:$d1:$d2:$d3\t|\tHLA:Protein $protein:$d1:$d2:$d3\t|\tscientific name\n";
 										print NODES  "$taxonomy_start\t|\t$d2tax\t|\tgenus\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n";
@@ -250,7 +250,7 @@ sub createHLATaxonomy{
 										$taxonomy_start++;
 										
 										my %d4hash = %{$d3hash{$d3}};
-										foreach my $d4 (sort keys %d4hash){
+										foreach my $d4 (sort {$a cmp $b} keys %d4hash){
 											if(ref($d4hash{$d4}) eq "HASH"){
 												print $log "\nMore than 8 digit precision detected $protein:$d1:$d2:$d3:$d4\n";
 											}else{

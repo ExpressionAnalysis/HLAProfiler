@@ -13,7 +13,7 @@ use File::Copy;
 
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "13 Sep 2017";
+my $last_updated = "27 Jun 2018";
 
 my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "\nDESCRIPTION\n" .
@@ -286,8 +286,8 @@ if($module eq "test_modules"){
 		exit; 
 	}else{
 		my $logfile = "$create_opts{output_dir}/HLAProfiler.build.log";
-		open (my $log, ">$logfile}");	
-		open(my $commands, ">$create_opts{output_dir}/HLAProfiler.build.commands.txt");
+		open (my $log, ">", "$logfile}");	
+		open(my $commands, ">", "$create_opts{output_dir}/HLAProfiler.build.commands.txt");
 		my $reference = mergeDuplicateAlleles($create_opts{reference}, $create_opts{output_dir},$create_opts{cwd}, $log, $commands, $logfile);
 		createHLATaxonomy($reference,"$create_opts{output_dir}",$log, $commands, $logfile);
 	}
@@ -435,7 +435,7 @@ if($module eq "test_modules"){
 			}
 		}
 		my $logfile = "$build_opts{output_dir}/logs/HLAProfiler.build.log";
-		open (my $log, ">$logfile}");	
+		open (my $log, ">", "$logfile}");	
 		open(my $commands, ">", "$build_opts{output_dir}/logs/HLAProfiler.build.commands.txt");
 		#Print the make directory commands to the command files
 		print $commands "$mkdir_cmds";
@@ -575,7 +575,7 @@ if($module eq "test_modules"){
 				exit;
 			}
 			my $out;
-			open ($out, ">$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
+			open ($out, ">",$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
 			my %simOpts=(num_reads=>$predict_opts{num_reads},read_length=>$predict_opts{read_length},max_insert=>$predict_opts{max_insert},scale=>$predict_opts{scale},shape=>$predict_opts{shape},seed=>$predict_opts{seed});
 			my $answers_ref = predictHLAType($predict_opts{profile_directory},$predict_opts{reads_directory},$predict_opts{counts_directory},$predict_opts{sample_name},$predict_opts{reference},$allele_map,$predict_opts{threads},$predict_opts{allele_refinement},\%simOpts,$predict_opts{output_dir},$predict_opts{kraken_db},$predict_opts{kraken_path},"$predict_opts{output_dir}/$predict_opts{sample_name}",$predict_opts{minimum_reads});
 			my %answers=%{$answers_ref};
@@ -630,7 +630,7 @@ sub run_build{
 	}
 
 	my $logfile = "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.log";
-	open($log, ">$logfile");
+	open($log, ">", "$logfile");
 
 	#This opens the files where all executed commands (or subroutine call equivalent commands) are stored
 	open(my $commands, ">", "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
@@ -726,7 +726,7 @@ sub run_predict{
 	my $out;
 	
 	##Prints output
-	open ($out, ">$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
+	open ($out, ">", "$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
 	print $out "Allele1_Accession\tAllele2_Accession\tAllele1\tAllele2\tProportion_reads\tProportion_signal\tCorrelation\tError\tPair_score\tFinal_score\tAllele1 Comments\tAllele2 Comments\n";
 	for my $answer (sort keys %answers){
 		print $out "$answers{$answer}";
@@ -834,7 +834,7 @@ sub buildHLADatabase{
 	if(! -X "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp"){
 		print $commands "echo \" \" >$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp\n";
 		print $log "Touching $output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp...";
-		open(GI, ">$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
+		open(GI, ">", "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
 		print GI " ";
 		close(GI);
 		print $log "DONE\n";
@@ -943,8 +943,8 @@ sub createKmerProfiles{
 	my $commands_file = "$output_dir/logs/HLAProfiler.build.profile.commands.txt";	
 	my $slog;
 	my $scommands;	
-	open($slog, ">$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
-	open($scommands, ">$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
+	open($slog, ">", "$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
+	open($scommands, ">", "$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
 	
 
 	print $log "Creating K-mer profiles. Profile specific commands are captured in $output_dir/logs/HLAProfiler.build.profile.commands.txt and logged in $output_dir/logs/HLAProfiler.build.profile.log\n";
@@ -1073,7 +1073,7 @@ sub simulateAndProcessAllele{
 
 
 	my $logfile = "$output_dir/logs/profile/$gene/$acc.profile.log";
-	open(my $log, ">$logfile");	
+	open(my $log, ">", "$logfile");	
 
 	#Directory structure set-up
 	if(!(-e "$output_dir/simulated/$gene" && -d "$output_dir/simulated/$gene")){

@@ -10,7 +10,7 @@ use Module::Load;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "14 Sep 2017";
+my $last_updated = "30 Jan 2018";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .

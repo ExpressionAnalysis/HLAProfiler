@@ -8,7 +8,7 @@ use Module::Load;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Nov 2016";
-my $last_updated = "11 Jan 2017";
+my $last_updated = "14 Sep 2017";
 
 my $usage = "\n$SCRIPT_NAME v$version\n" .
 	    "\nDESCRIPTION:\n" .
@@ -83,6 +83,7 @@ sub runCommandline{
 	foreach my $allele (sort {$a cmp $b} keys %coverage){
 		print "$allele\t$coverage{$allele}{mcon}\t$coverage{$allele}{pcon}\t$coverage{$allele}{mcov}\t$coverage{$allele}{pcov}\n"
 	}
+
 	foreach my $allele (sort {$a cmp $b} keys  %alleles){
 		if($alleles{$allele}{replace}==1){
 			print "Based on the observed data $allele is really predicted to be $alleles{$allele}{allele} $alleles{$allele}{name}.\n>$alleles{$allele}{allele} $alleles{$allele}{name} " . length($alleles{$allele}{seq}) . " bp\n$alleles{$allele}{seq}\n";
@@ -158,17 +159,17 @@ sub detectMutations{
 		my $fh1;
 		my $fh2;
 		if (-e "${input}_1.fastq.gz"){
-			open($fh1, "gunzip -c ${input}_1.fastq.gz |") || (print STDERR "Cannot open file ${input}_1.fastq.gz\n" && exit 1);
-			open($fh2, "gunzip -c ${input}_2.fastq.gz |") || (print $STDERR "Cannot open file ${input}_2.fastq.gz\n" & exit 1);
+			open($fh1, "<", "gunzip -c ${input}_1.fastq.gz |") || (print STDERR "Cannot open file ${input}_1.fastq.gz\n" && exit 1);
+			open($fh2, "<", "gunzip -c ${input}_2.fastq.gz |") || (print $STDERR "Cannot open file ${input}_2.fastq.gz\n" & exit 1);
 		}elsif (-e "${input}_1.fastq"){
-			open($fh1, "${input}_1.fastq") || (print STDERR "Cannot open file ${input}_1.fastq\n"  & exit 1);
-			open($fh2, "${input}_2.fastq") || (print STDERR "Cannot open file ${input}_2.fastq\n"  & exit 1);
+			open($fh1, "<", "${input}_1.fastq") || (print STDERR "Cannot open file ${input}_1.fastq\n"  & exit 1);
+			open($fh2, "<", "${input}_2.fastq") || (print STDERR "Cannot open file ${input}_2.fastq\n"  & exit 1);
 		}elsif (-e "${input}_1.fq.gz"){
-			open($fh1, "gunzip -c ${input}_1.fq.gz |") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" & exit 1);
-			open($fh2, "gunzip -c ${input}_2.fq.gz |") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" & exit 1);
+			open($fh1, "<", "gunzip -c ${input}_1.fq.gz |") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" & exit 1);
+			open($fh2, "<", "gunzip -c ${input}_2.fq.gz |") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" & exit 1);
 		}elsif (-e "${input}_1.fq"){
-			open($fh1, "${input}_1.fq") || (print STDERR "Cannot open file ${input}_1.fq\n"  & exit 1);
-			open($fh2, "${input}_2.fq") || (print STDERR "Cannot open file ${input}_2.fq\n"  & exit 1);
+			open($fh1, "<", "${input}_1.fq") || (print STDERR "Cannot open file ${input}_1.fq\n"  & exit 1);
+			open($fh2, "<", "${input}_2.fq") || (print STDERR "Cannot open file ${input}_2.fq\n"  & exit 1);
 		}else{
 			print STDERR "Cannot find fastq file with prefix ${input}\n";
 			exit 1;

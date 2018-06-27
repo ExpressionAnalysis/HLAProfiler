@@ -7,7 +7,7 @@ use Getopt::Long;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 May 2016";
-my $last_updated = "11 Jan 2017";
+my $last_updated = "14 Sep 2017";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .
@@ -49,13 +49,12 @@ sub findExcludeGenes{
 	$transcript_gtf = shift if ($transcript_gtf eq "HLADistractome");
 	my $exclude_bed = shift;	
 	my $logfile = shift;
-	
 	my %hla;
 	my %nonhla;
 
         my $log;
         if($logfile){
-                open($log, ">>$logfile");
+                open($log, ">>", "$logfile") || die "Cannot open log for writing. '$logfile'\n";
         }else{
                 $log = *STDERR;
         }
@@ -65,7 +64,7 @@ sub findExcludeGenes{
 	my $exclude_fh;
 	if($exclude_bed ne "" && -e $exclude_bed){
 		if($exclude_bed=~m/\.gz$/){
-			open($exclude_fh, "gunzip -c $exclude_bed |");
+			open($exclude_fh, "gunzip -c $exclude_bed |") || (print $log "Cannot unzip and open exclude_bed. '$exclude_bed'\n" && exit 1);
 		}else{
 			open($exclude_fh, "$exclude_bed");	
 		}	
@@ -81,13 +80,13 @@ sub findExcludeGenes{
 		my @cols = split /\t/, $_;
 		$exclude_coord{$cols[0]}{$cols[1]}=$cols[2];
 	}
+	close ($exclude_fh);
 
 	##Read transcript gtf	
 	my $transcript_fh;
-
 	if($transcript_gtf ne "" && -e $transcript_gtf){
 		if($transcript_gtf=~m/\.gz$/){
-			open($transcript_fh, "gunzip -c $transcript_gtf |");
+			open($transcript_fh, "gunzip -c $transcript_gtf |") || (print $log "Cannot unzip and open transcript gtf. '$transcript_gtf'\n" && exit 1);
 		}else{
 			open($transcript_fh, "$transcript_gtf");	
 		}	
@@ -95,7 +94,6 @@ sub findExcludeGenes{
 		print $log "Transcripts GTF $transcript_gtf does not exist. Exiting\n";
 		exit 1;
 	}
-	
 	
 	while(<$transcript_fh>){
 		chomp;
@@ -123,6 +121,7 @@ sub findExcludeGenes{
 			}
 		}
 	}
+	close($transcript_fh);
 	return(\%exclude);
 }
 
@@ -144,7 +143,7 @@ sub createDistractome{
 	my $transcript_fh;
 	if($transcript_fa ne "" && -e $transcript_fa){
 		if($transcript_fa=~m/\.gz$/){
-			open($transcript_fh, "gunzip -c $transcript_fa |");
+			open($transcript_fh, "gunzip -c $transcript_fa |") || (print $log "Cannot unzip and open transcript file. '$transcript_fa'\n" && exit 1);
 		}else{
 			open($transcript_fh, "$transcript_fa");	
 		}	

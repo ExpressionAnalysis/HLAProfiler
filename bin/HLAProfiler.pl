@@ -2,6 +2,7 @@
 
 (my $SCRIPTS_DIR = $0) =~ s/HLAProfiler.pl//;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
+$SCRIPTS_DIR = "." if ($SCRIPTS_DIR eq "");
 
 use warnings;
 use strict;
@@ -85,7 +86,7 @@ if($module eq "test_modules"){
 			#"\t\tHLAPredict\n" .
 			"\nGeneral options:\n" .
 			"-kraken_path|kp\tbase directory of kraken installation. (default:base directory of path returned by `which kraken`)\n" . 
-			"-directory|td\tlocation of test files. (default:;'.')\n" . 
+			"-directory|d\tlocation of test files. (default:;'.')\n" . 
 			"-output_directory|od\tlocation of temporary output files. (default:;'.')\n" . 
 			"-help|h\t\tprints this help prompt\n" .
 	            	"\nAUTHORS:\n" . 
@@ -285,8 +286,8 @@ if($module eq "test_modules"){
 		exit; 
 	}else{
 		my $logfile = "$create_opts{output_dir}/HLAProfiler.build.log";
-		open (my $log, ">","$logfile");	
-		open(my $commands, ">", "$create_opts{output_dir}/HLAProfiler.build.commands.txt");
+		open (my $log, ">$logfile}");	
+		open(my $commands, ">$create_opts{output_dir}/HLAProfiler.build.commands.txt");
 		my $reference = mergeDuplicateAlleles($create_opts{reference}, $create_opts{output_dir},$create_opts{cwd}, $log, $commands, $logfile);
 		createHLATaxonomy($reference,"$create_opts{output_dir}",$log, $commands, $logfile);
 	}
@@ -376,8 +377,8 @@ if($module eq "test_modules"){
 			}
 		}
 		my $logfile = "$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.log";
-		open (my $log, ">", "$logfile");	
-		open(my $commands, ">", "$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
+		open (my $log, ">$logfile}");	
+		open(my $commands, ">$build_opts{output_dir}/$build_opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
 		print $commands "$mkdir_cmds";
 		buildHLADatabase($build_opts{reference},$build_opts{transcripts},$build_opts{transcript_gtf},$build_opts{exclusion_bed},$build_opts{output_dir},$build_opts{database_name},$build_opts{k_mer},$build_opts{minimizer},$build_opts{threads},$build_opts{kraken_path}, $log,$commands);
 }
@@ -434,7 +435,7 @@ if($module eq "test_modules"){
 			}
 		}
 		my $logfile = "$build_opts{output_dir}/logs/HLAProfiler.build.log";
-		open (my $log, ">", "$logfile");	
+		open (my $log, ">$logfile}");	
 		open(my $commands, ">", "$build_opts{output_dir}/logs/HLAProfiler.build.commands.txt");
 		#Print the make directory commands to the command files
 		print $commands "$mkdir_cmds";
@@ -574,7 +575,7 @@ if($module eq "test_modules"){
 				exit;
 			}
 			my $out;
-			open ($out, ">","$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
+			open ($out, ">$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
 			my %simOpts=(num_reads=>$predict_opts{num_reads},read_length=>$predict_opts{read_length},max_insert=>$predict_opts{max_insert},scale=>$predict_opts{scale},shape=>$predict_opts{shape},seed=>$predict_opts{seed});
 			my $answers_ref = predictHLAType($predict_opts{profile_directory},$predict_opts{reads_directory},$predict_opts{counts_directory},$predict_opts{sample_name},$predict_opts{reference},$allele_map,$predict_opts{threads},$predict_opts{allele_refinement},\%simOpts,$predict_opts{output_dir},$predict_opts{kraken_db},$predict_opts{kraken_path},"$predict_opts{output_dir}/$predict_opts{sample_name}",$predict_opts{minimum_reads});
 			my %answers=%{$answers_ref};
@@ -629,7 +630,7 @@ sub run_build{
 	}
 
 	my $logfile = "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.log";
-	open($log, ">","$logfile");
+	open($log, ">$logfile");
 
 	#This opens the files where all executed commands (or subroutine call equivalent commands) are stored
 	open(my $commands, ">", "$opts{output_dir}/$opts{database_name}/data/logs/HLAProfiler.build.commands.txt");
@@ -661,7 +662,7 @@ sub run_predict{
 	my $fastq_prefix = $opts{fastq1};
 	#Strip suffix and parent directories from the file name 
 	$fastq_prefix =~ s/.*\///;
-	$fastq_prefix =~ s/_1\.f(ast)*q(\.gz)*//;
+	$fastq_prefix =~ s/_R*1\.f(ast)*q(\.gz)*//;
 	
 	my $log = *STDERR;
 	if($opts{log}){
@@ -701,7 +702,7 @@ sub run_predict{
 			print $log "DONE\n";
 		}
 	}
-	if(!(-e "$opts{output_dir}/$fastq_prefix/counts" && -d "$opts{output_dir}/$fastq_prefix/filtered")){
+	if(!(-e "$opts{output_dir}/$fastq_prefix/counts" && -d "$opts{output_dir}/$fastq_prefix/counts")){
 		print $log "Making directory  $opts{output_dir}/$fastq_prefix/counts...";
 		if(! mkdir "$opts{output_dir}/$fastq_prefix/counts"){
 			print $log "Fatal Error: Error creating directory $opts{output_dir}/$fastq_prefix/counts\n";
@@ -725,7 +726,7 @@ sub run_predict{
 	my $out;
 	
 	##Prints output
-	open ($out, ">","$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
+	open ($out, ">$opts{output_dir}/$fastq_prefix/$fastq_prefix.HLATypes.txt") or $out = *STDOUT;
 	print $out "Allele1_Accession\tAllele2_Accession\tAllele1\tAllele2\tProportion_reads\tProportion_signal\tCorrelation\tError\tPair_score\tFinal_score\tAllele1 Comments\tAllele2 Comments\n";
 	for my $answer (sort keys %answers){
 		print $out "$answers{$answer}";
@@ -833,7 +834,7 @@ sub buildHLADatabase{
 	if(! -X "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp"){
 		print $commands "echo \" \" >$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp\n";
 		print $log "Touching $output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp...";
-		open(GI, ">", "$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
+		open(GI, ">$output_dir/$database_name/taxonomy/gi_taxid_nucl.dmp");
 		print GI " ";
 		close(GI);
 		print $log "DONE\n";
@@ -942,8 +943,8 @@ sub createKmerProfiles{
 	my $commands_file = "$output_dir/logs/HLAProfiler.build.profile.commands.txt";	
 	my $slog;
 	my $scommands;	
-	open($slog, ">", "$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
-	open($scommands, ">", "$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
+	open($slog, ">$profile_log") || (print  $log "Cannot open log file $profile_log. Exiting.\n" and exit);
+	open($scommands, ">$commands_file") || (print $log "Cannot open commands file $commands_file. Exiting.\n" and exit);
 	
 
 	print $log "Creating K-mer profiles. Profile specific commands are captured in $output_dir/logs/HLAProfiler.build.profile.commands.txt and logged in $output_dir/logs/HLAProfiler.build.profile.log\n";
@@ -1072,7 +1073,7 @@ sub simulateAndProcessAllele{
 
 
 	my $logfile = "$output_dir/logs/profile/$gene/$acc.profile.log";
-	open(my $log, ">", "$logfile");	
+	open(my $log, ">$logfile");	
 
 	#Directory structure set-up
 	if(!(-e "$output_dir/simulated/$gene" && -d "$output_dir/simulated/$gene")){
@@ -1167,7 +1168,7 @@ sub gzip{
 sub gzipFiles{
 	my $directory = shift;
 	my $search_string = shift;
-	opendir(my $dh, $directory);
+	opendir(my $dh, $directory) || (print $log "Cannot open directory $directory\n" and exit);
 	while (readdir $dh){
 		if($_=~m/$search_string/ && $_!~m/.gz$/){
 			gzip("$directory/$_");
@@ -1189,25 +1190,25 @@ sub determineProfile{
 	if(! (-e "$output_dir/kmer_profiles/" && -d "$output_dir/kmer_profiles/")){
 		print $commands "mkdir $output_dir/kmer_profiles/\n";
 		print $log "Making directory $output_dir/kmer_profiles/..."; 
-	mkdir "$output_dir/kmer_profiles/";
-	print $log "DONE\n";
-}
-
-my $fm = Parallel::ForkManager->new($threads);
-opendir(my $dh, "$input_dir");
-##Iterate through files in the input directory
-DIR:while (readdir $dh){
-	if(-d "$input_dir/$_" && $_ ne "." && $_ ne ".."){ ##Only concerned about directorys because these are the genes
-		my $pid = $fm->start and next DIR;
-		my $protein = $_;
-		print $commands "perl $SCRIPTS_DIR/modules/DetermineProfile.pm fastq $protein $input_dir/$protein/counts $prefix $output_dir/kmer_profiles\n";
-		DetermineProfile->createProfile($protein, "$input_dir/$protein/counts", $prefix, "$output_dir/kmer_profiles");
-		print $log "Creating profile for $protein...DONE\n";
-		$fm->finish;
+		mkdir "$output_dir/kmer_profiles/";
+		print $log "DONE\n";
 	}
-}
-$fm->wait_all_children;
-closedir $dh; 
+
+	my $fm = Parallel::ForkManager->new($threads);
+	opendir(my $dh, "$input_dir") || (print $log "Cannot open directory $directory\n" and exit);
+	##Iterate through files in the input directory
+	DIR:while (readdir $dh){
+		if(-d "$input_dir/$_" && $_ ne "." && $_ ne ".."){ ##Only concerned about directorys because these are the genes
+			my $pid = $fm->start and next DIR;
+			my $protein = $_;
+			print $commands "perl $SCRIPTS_DIR/modules/DetermineProfile.pm fastq $protein $input_dir/$protein/counts $prefix $output_dir/kmer_profiles\n";
+			DetermineProfile->createProfile($protein, "$input_dir/$protein/counts", $prefix, "$output_dir/kmer_profiles");
+			print $log "Creating profile for $protein...DONE\n";
+			$fm->finish;
+		}
+	}
+	$fm->wait_all_children;
+	closedir $dh; 
 }
 
 sub filterReads{
@@ -1237,7 +1238,7 @@ sub countUniqueReads{
 	my $threads = shift;
 	my $log = shift;
 	load "$SCRIPTS_DIR/modules/ReadCounter.pm";
-	opendir(my $dh, $directory);
+	opendir(my $dh, $directory) || (print $log "Cannot open directory $directory\n" and exit);
 	my $fm = Parallel::ForkManager->new($threads);
 	my $count_commands = "";
 	##Iterate through files in the directory
@@ -1273,7 +1274,7 @@ sub predictHLAType{
 	my $minReads = shift;
 	load "$SCRIPTS_DIR/modules/HLAPredict.pm";
 	HLAPredict->setOptions(2,20,100,1,20,$threads,0,$output_dir, $SCRIPTS_DIR, $predict_mode, $opts_ref,$kraken_db,$kraken_path,$minReads);
-	opendir(my $dh, $counts_dir);
+	opendir(my $dh, $counts_dir) || (print $log "Cannot open directory $directory\n" and exit);
 	my %answers;
 	my $fm = Parallel::ForkManager->new($threads);
 

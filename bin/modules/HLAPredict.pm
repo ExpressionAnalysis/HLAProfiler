@@ -12,7 +12,7 @@ use Parallel::ForkManager;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "11 Jan 2017";
+my $last_updated = "14 Sep 2017";
 
 my $usage = "\n$SCRIPT_NAME v$version\n".
 	"\nDESCRIPTION:\n" .
@@ -71,7 +71,7 @@ my %sig_kmers = ();
 my %combined_kmers = ();
 my $log;
 sub run_Commandline{
-	GetOptions(\%opts, qw(help|h sim_num_reads|snr=s sim_read_length|srl=s sim_max_insert|sm=s sim_scale|ssc=s sim_shape|ssh=s sim_seed|ssd=s allele_refinement|ar=s pp_scale|ps=s threads|c=s fastq_dir|fd=s unique1|u=s cntThresh|ct=s scripts_dir|sd=s reference|r=s minReads|mr=s minQuality|q=s output|o=s profile|ph=s numFinalists|nf=s numSemifinalists|ns=s PairPickerPower|pow=s allele_map|am=s log|l=s out_dir|od=s kraken_path|kp=s kraken_db|kdb=s));
+	GetOptions(\%opts, qw(help|h sim_num_reads|snr:s sim_read_length|srl:s sim_max_insert|sm:s sim_scale|ssc:s sim_shape|ssh:s sim_seed|ssd:s allele_refinement|ar:s pp_scale|ps:s threads|c:s fastq_dir|fd:s unique1|u:s cntThresh|ct:s scripts_dir|sd:s reference|r:s minReads|mr:s minQuality|q:s output|o:s profile|ph:s numFinalists|nf:s numSemifinalists|ns:s PairPickerPower|pow:s allele_map|am:s log|l:s out_dir|od:s kraken_path|kp:s kraken_db|kdb:s));
 	if ($opts{help}){
 		print "$usage";
 		exit

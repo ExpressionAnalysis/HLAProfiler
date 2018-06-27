@@ -13,7 +13,7 @@ use Test::Trap qw/ :output(systemsafe) /;
 use lib "$FindBin::Bin/../bin/modules";
 
 my $creation_date = "1 Feb 2017";
-my $last_updated = "14 Jul 2017";
+my $last_updated = "14 Sep 2017";
 
 my $usage = "$0\n" .
 	     	"DESCRIPTION\n" .
@@ -38,7 +38,7 @@ my $usage = "$0\n" .
 		#"\t\tHLAPredict\n" .
 		"\nGeneral options:\n" .
 		"-kraken_path|kp\tbase directory of kraken installation. (default:base directory of path returned by `which kraken`)\n" .
-		"-directory|td\tlocation of test files. (default:;'.')\n" .
+		"-directory|d\tlocation of test files. (default:;'.')\n" .
 		"-output_directory|od\tlocation of temporary output files. (default:;'.')\n" .
 		"-help|h\t\tprints this help prompt\n" .
 		"\nAUTHORS:\n" .
@@ -345,7 +345,7 @@ sub testHLADistractome{
 
 		my %exclude_genes = ("HLA-A"=>1,LST1=>1,EHMT2=>1,HCG4B=>1);
 		my $genes = HLADistractome::findExcludeGenes($transcripts_gtf,$exclude_bed);
-		#Test 6 - Correct exclude hash		
+		#Test 6 - Correct exclude hash
 		is_deeply($genes,\%exclude_genes, "Function findExcludeGenes: correct exclude hash");
 
 		@r = trap {HLADistractome::createDistractome("fasta", "$outdir/distractome.function.fa")};
@@ -1235,7 +1235,7 @@ sub testAlleleRefiner{
 
 		my %allele_hash_truth1 = ("HLA00001"=>{replace=>0},"HLA00002"=>{replace=>0});
 		my %coverage_hash_truth1= ("HLA00001"=>{"mcon"=>54, "mcov"=>108, "pcon"=>4.92,"pcov"=>9.84},"HLA00002"=>{"mcon"=>302, "mcov"=>302, "pcon"=>'27.50',"pcov"=>'27.50'});
-		my($allele_hash1, $coverage_hash1)= AlleleRefiner->runModule("A","$indir/inputs/HLA00001_HLA00002.A","HLA00001|HLA00002","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/");
+		my($allele_hash1, $coverage_hash1)= AlleleRefiner->runModule("A","$indir/inputs/HLA00001_HLA00002.A","HLA00001|HLA00002","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/","",0,0,0);
 		##Test 37 - runModule correct allele hash
 		is_deeply($allele_hash1, \%allele_hash_truth1, "Fuction runModule: no mismatches correct allele hash");
 		##Test 38 - runModule correct coverage_hash
@@ -1243,13 +1243,13 @@ sub testAlleleRefiner{
 		
 		my %allele_hash_truth2 = ("HLA00001"=>{replace=>1,novel=>1,allele=>"HLA00001N",name=>"A*01:01:01:01_novel",seq=>"ATGGCCGTCATGGCGCCCCGAACCCTCCTCCTGCTACTCTCGGGGGCCCTGGCCCTGACCCAGACCTGGGCGGGCTCCCACTCCATGAGGTGTTTCTTCACATCCGTGTCCCGGCCCGGCCGCGGGGAGCCCCGCTTCATCGCCGTGGGCTACGTGGACGACACGCAGTTCGTGCGGTTCGACAGCGACGCCGCGAGCCAGAAGATGGAGCCGCGGGCGCCGTGGATAGAGCAGGAGGGGCCGGAGTATTGGGACCAGGAGACACGGAATATGAAGGCCCACTCACAGACTGACCGAGCGAACC"},"HLA00002"=>{replace=>0});
 		my %coverage_hash_truth2= ("HLA00001"=>{"mcon"=>212, "mcov"=>301, "pcon"=>19.31,"pcov"=>27.41},"HLA00002"=>{"mcon"=>302, "mcov"=>302, "pcon"=>'27.50',"pcov"=>'27.50'});
-		my($allele_hash2, $coverage_hash2)= AlleleRefiner->runModule("A","$indir/inputs/HLA00001N_HLA00002.A","HLA00001|HLA00002","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/");
+		my($allele_hash2, $coverage_hash2)= AlleleRefiner->runModule("A","$indir/inputs/HLA00001N_HLA00002.A","HLA00001|HLA00002","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/","",0,0,0);
 		##Test 39 - runModule correct allele hash
 		is_deeply($allele_hash2, \%allele_hash_truth2, "Fuction runModule: novel allele correct allele hash");
 		##Test 40 - runModule correct allele hash
 		is_deeply($coverage_hash2, \%coverage_hash_truth2, "Fuction runModul:e novel allele correct coverage hash");
 		
-		my @r = trap{AlleleRefiner->runModule("A","$indir/inputs/HLA00001N_HLA00002.A","","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/")};
+		my @r = trap{AlleleRefiner->runModule("A","$indir/inputs/HLA00001N_HLA00002.A","","$indir/inputs/hla.allele_refinement.fa",20,10,20,1,.75,"$FindBin::Bin/../bin/","",0,0,0)};
 		##Test 41 - runModule no candidates
 		is($trap->exit, 1, "Function runModule no candidates exit");
 		##Test 42 -  runModule no candidates error message

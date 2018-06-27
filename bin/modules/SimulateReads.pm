@@ -10,7 +10,7 @@ use Module::Load;
 (my $SCRIPT_NAME = $0) =~ s/.*\///;
 my $version = "1.0";
 my $creation_date = "1 Oct 2016";
-my $last_updated = "12 Jan 2017";
+my $last_updated = "14 Sep 2017";
 
 my $usage="\n$SCRIPT_NAME v$version\n".
 	  "\nDESCRIPTIONs:\n" .
@@ -82,6 +82,11 @@ sub setSimulationOptions{
 	$opts{outPrefix}=shift || "simulatedReads";
 	load ("$opts{scripts_dir}/modules/SequenceFunctions.pm");
 	return(\%opts);
+}
+
+##This loads in the SequenceFunctions.pm module
+sub loadSequenceFunctions{
+	load ("$opts{scripts_dir}/modules/SequenceFunctions.pm");
 }
 	
 ## Simulate the reads

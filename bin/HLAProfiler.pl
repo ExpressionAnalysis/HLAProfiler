@@ -575,7 +575,7 @@ if($module eq "test_modules"){
 				exit;
 			}
 			my $out;
-			open ($out, ">",$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
+			open ($out, ">","$predict_opts{output_dir}/$predict_opts{sample_name}.HLATypes.txt") or $out=*STDOUT;
 			my %simOpts=(num_reads=>$predict_opts{num_reads},read_length=>$predict_opts{read_length},max_insert=>$predict_opts{max_insert},scale=>$predict_opts{scale},shape=>$predict_opts{shape},seed=>$predict_opts{seed});
 			my $answers_ref = predictHLAType($predict_opts{profile_directory},$predict_opts{reads_directory},$predict_opts{counts_directory},$predict_opts{sample_name},$predict_opts{reference},$allele_map,$predict_opts{threads},$predict_opts{allele_refinement},\%simOpts,$predict_opts{output_dir},$predict_opts{kraken_db},$predict_opts{kraken_path},"$predict_opts{output_dir}/$predict_opts{sample_name}",$predict_opts{minimum_reads});
 			my %answers=%{$answers_ref};
@@ -1195,7 +1195,7 @@ sub determineProfile{
 	}
 
 	my $fm = Parallel::ForkManager->new($threads);
-	opendir(my $dh, "$input_dir") || (print $log "Cannot open directory $directory\n" and exit);
+	opendir(my $dh, "$input_dir") || (print $log "Cannot open directory $input_dir\n" and exit);
 	##Iterate through files in the input directory
 	DIR:while (readdir $dh){
 		if(-d "$input_dir/$_" && $_ ne "." && $_ ne ".."){ ##Only concerned about directorys because these are the genes
@@ -1274,7 +1274,7 @@ sub predictHLAType{
 	my $minReads = shift;
 	load "$SCRIPTS_DIR/modules/HLAPredict.pm";
 	HLAPredict->setOptions(2,20,100,1,20,$threads,0,$output_dir, $SCRIPTS_DIR, $predict_mode, $opts_ref,$kraken_db,$kraken_path,$minReads);
-	opendir(my $dh, $counts_dir) || (print $log "Cannot open directory $directory\n" and exit);
+	opendir(my $dh, $counts_dir) || (print $log "Cannot open directory $counts_dir\n" and exit);
 	my %answers;
 	my $fm = Parallel::ForkManager->new($threads);
 

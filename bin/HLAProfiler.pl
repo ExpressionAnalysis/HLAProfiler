@@ -10,7 +10,7 @@ use Getopt::Long;
 use Module::Load;
 use File::Copy;
 
-my $version = "1.0";
+my $version = "1.1.0";
 my $creation_date = "1 Oct 2016";
 my $last_updated = "13 Sep 2017";
 

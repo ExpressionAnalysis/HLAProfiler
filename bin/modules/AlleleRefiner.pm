@@ -159,14 +159,14 @@ sub detectMutations{
 		my $fh1;
 		my $fh2;
 		if (-e "${input}_1.fastq.gz"){
-			open($fh1, "<", "gunzip -c ${input}_1.fastq.gz |") || (print STDERR "Cannot open file ${input}_1.fastq.gz\n" && exit 1);
-			open($fh2, "<", "gunzip -c ${input}_2.fastq.gz |") || (print $STDERR "Cannot open file ${input}_2.fastq.gz\n" & exit 1);
+			open($fh1, "-|", "gunzip -c ${input}_1.fastq.gz") || (print STDERR "Cannot open file ${input}_1.fastq.gz\n" && exit 1);
+			open($fh2, "-|", "gunzip -c ${input}_2.fastq.gz") || (print $STDERR "Cannot open file ${input}_2.fastq.gz\n" & exit 1);
 		}elsif (-e "${input}_1.fastq"){
 			open($fh1, "<", "${input}_1.fastq") || (print STDERR "Cannot open file ${input}_1.fastq\n"  & exit 1);
 			open($fh2, "<", "${input}_2.fastq") || (print STDERR "Cannot open file ${input}_2.fastq\n"  & exit 1);
 		}elsif (-e "${input}_1.fq.gz"){
-			open($fh1, "<", "gunzip -c ${input}_1.fq.gz |") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" & exit 1);
-			open($fh2, "<", "gunzip -c ${input}_2.fq.gz |") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" & exit 1);
+			open($fh1, "-|", "gunzip -c ${input}_1.fq.gz") || (print STDERR "Cannot open file ${input}_1.fq.gz\n" & exit 1);
+			open($fh2, "-|", "gunzip -c ${input}_2.fq.gz") || (print STDERR "Cannot open file ${input}_2.fq.gz\n" & exit 1);
 		}elsif (-e "${input}_1.fq"){
 			open($fh1, "<", "${input}_1.fq") || (print STDERR "Cannot open file ${input}_1.fq\n"  & exit 1);
 			open($fh2, "<", "${input}_2.fq") || (print STDERR "Cannot open file ${input}_2.fq\n"  & exit 1);
@@ -293,7 +293,7 @@ sub detectMutations{
 	}
 	
 	if($opts{print_mismatches}){
-		open(MOUT, ">$opts{output}.mismatches.txt");
+		open(MOUT, ">$opts{output}.mismatches.txt") || print STDERR "Cannot open file '$opts{output}.mismatches.txt' for writing\n";
 		print MOUT "Allele\tPositions\tMismatchBase\tMismatchCoverage\tReferenceCoverage\n";
 	}
 
@@ -440,8 +440,8 @@ sub alignRead{
 			my %k2_pos=%{$k2{$allele}};
 			my %k1r_pos=%{$k1r{$allele}};
 			if(scalar keys %k2_pos >0 && scalar keys %k1r_pos >0){
-				$mmc{k2} = identifyMismatches($allele,$length2,$read2,\%k2_pos,$alignments{k2}, $mmc{k2}, $quality1r,$candidate_ref,  $mthresh, $qthresh);		
-				$mmc{k1r} = identifyMismatches($allele,$length1,$read1r,\%k1r_pos,$alignments{k1r}, $mmc{k1r}, $quality2,$candidate_ref,  $mthresh, $qthresh);		
+				$mmc{k2} = identifyMismatches($allele,$length2,$read2,\%k2_pos,$alignments{k2}, $mmc{k2}, $quality2,$candidate_ref,  $mthresh, $qthresh);		
+				$mmc{k1r} = identifyMismatches($allele,$length1,$read1r,\%k1r_pos,$alignments{k1r}, $mmc{k1r}, $quality1r,$candidate_ref,  $mthresh, $qthresh);		
 			}
 		}
 			
